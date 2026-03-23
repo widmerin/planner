@@ -21,8 +21,8 @@ export default defineConfig({
     reuseExistingServer: true,
     timeout: 120000,
     env: {
-      NUXT_PUBLIC_APP_USER: process.env.NUXT_PUBLIC_APP_USER || 'runner',
-      NUXT_PUBLIC_APP_PASSWORD: process.env.NUXT_PUBLIC_APP_PASSWORD || 'run2026',
+      NUXT_PUBLIC_APP_USER: process.env.NUXT_PUBLIC_APP_USER,
+      NUXT_PUBLIC_APP_PASSWORD: process.env.NUXT_PUBLIC_APP_PASSWORD,
     },
   },
   projects: [
