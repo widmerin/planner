@@ -12,7 +12,6 @@
             <h1>Week Planner</h1>
             <p class="subtitle">{{ weekLabel }}</p>
           </div>
-          <button type="button" class="logout-btn" @click="handleLogout" title="Sign out">Sign Out</button>
         </div>
 
         <div class="week-controls">
