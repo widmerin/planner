@@ -1,4 +1,12 @@
 import { defineConfig, devices } from '@playwright/test'
+import * as dotenv from 'dotenv'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+// Load environment variables from .env.local
+dotenv.config({ path: path.resolve(__dirname, '.env.local') })
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -13,8 +21,8 @@ export default defineConfig({
     reuseExistingServer: true,
     timeout: 120000,
     env: {
-      NUXT_PUBLIC_APP_USER: 'runner',
-      NUXT_PUBLIC_APP_PASSWORD: 'run2026',
+      NUXT_PUBLIC_APP_USER: process.env.NUXT_PUBLIC_APP_USER || 'runner',
+      NUXT_PUBLIC_APP_PASSWORD: process.env.NUXT_PUBLIC_APP_PASSWORD || 'run2026',
     },
   },
   projects: [
