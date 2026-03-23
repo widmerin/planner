@@ -7,18 +7,17 @@
 
       <header class="page-header">
         <div class="header-top">
-          <div>
+          <div class="header-copy">
             <p class="eyebrow">Running Schedule</p>
             <h1>Week Planner</h1>
+            <p class="subtitle">{{ weekLabel }}</p>
           </div>
           <button type="button" class="logout-btn" @click="handleLogout" title="Sign out">Sign Out</button>
         </div>
 
-        <p class="subtitle">{{ weekLabel }}</p>
-
         <div class="week-controls">
-          <button type="button" class="btn" @click="goToPreviousWeek">Previous</button>
-          <button type="button" class="btn btn-primary" @click="goToCurrentWeek">Current</button>
+          <button type="button" class="btn" @click="goToPreviousWeek">Prev</button>
+          <button type="button" class="btn btn-primary" @click="goToCurrentWeek">Today</button>
           <button type="button" class="btn" @click="goToNextWeek">Next</button>
         </div>
 
