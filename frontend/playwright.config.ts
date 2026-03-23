@@ -5,8 +5,10 @@ import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-// Load environment variables from .env.local
-dotenv.config({ path: path.resolve(__dirname, '.env.local') })
+dotenv.config({
+  path: [path.resolve(__dirname, '.env.local'), path.resolve(__dirname, '.env')],
+  quiet: true,
+})
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -21,8 +23,8 @@ export default defineConfig({
     reuseExistingServer: true,
     timeout: 120000,
     env: {
-      NUXT_PUBLIC_APP_USER: process.env.NUXT_PUBLIC_APP_USER,
-      NUXT_PUBLIC_APP_PASSWORD: process.env.NUXT_PUBLIC_APP_PASSWORD,
+      APP_USER: process.env.APP_USER,
+      APP_PASSWORD: process.env.APP_PASSWORD,
     },
   },
   projects: [

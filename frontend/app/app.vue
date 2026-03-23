@@ -22,25 +22,61 @@
           <button type="button" class="btn" @click="goToNextWeek">Next</button>
         </div>
 
-        <section v-if="!isLoading && !loadError" class="progress-card">
-          <div class="progress-meta">
-            <strong>Overall progress</strong>
-            <span>{{ doneCount }} / {{ totalCount }} done ({{ progressPercent }}%)</span>
-          </div>
-          <div class="progress-track" role="progressbar" aria-label="Overall progress" :aria-valuemin="0" :aria-valuemax="100" :aria-valuenow="progressPercent">
-            <div class="progress-fill" :style="{ width: `${progressPercent}%` }" />
-          </div>
-        </section>
+        <div v-if="!isLoading && !loadError" class="progress-stack">
+          <section class="progress-card progress-card-week">
+            <div class="progress-card-head">
+              <div>
+                <p class="progress-kicker">This week</p>
+                <strong>{{ weekMomentumLabel }}</strong>
+              </div>
+              <div class="progress-score">
+                <span>{{ progressPercent }}%</span>
+              </div>
+            </div>
 
-        <section v-if="!isLoading && !loadError && overallTotal > 0" class="all-weeks-card">
-          <div class="all-weeks-meta">
-            <strong>All weeks</strong>
-            <span>{{ overallDoneCount }} / {{ overallTotal }} workouts ({{ overallProgressPercent }}%)</span>
-          </div>
-          <div class="progress-track" role="progressbar" aria-label="All weeks progress" :aria-valuemin="0" :aria-valuemax="100" :aria-valuenow="overallProgressPercent">
-            <div class="progress-fill" :style="{ width: `${overallProgressPercent}%` }" />
-          </div>
-        </section>
+            <div class="progress-track-wrap">
+              <div class="progress-track progress-track-week" role="progressbar" aria-label="This week progress" :aria-valuemin="0" :aria-valuemax="100" :aria-valuenow="progressPercent">
+                <div class="progress-fill progress-fill-week" :style="{ width: `${progressPercent}%` }" />
+              </div>
+
+              <div class="progress-pips" aria-hidden="true">
+                <span v-for="milestone in progressMilestones" :key="`week-${milestone}`" class="progress-pip" :class="{ active: progressPercent >= milestone }" />
+              </div>
+            </div>
+
+            <div class="progress-meta playful-meta">
+              <span>{{ doneCount }} of {{ totalCount }} workouts checked off</span>
+              <span class="progress-caption">{{ totalCount - doneCount }} left</span>
+            </div>
+          </section>
+
+          <section v-if="overallTotal > 0" class="progress-card all-weeks-card progress-card-season">
+            <div class="progress-card-head">
+              <div>
+                <p class="progress-kicker">Full plan</p>
+                <strong>{{ overallMomentumLabel }}</strong>
+              </div>
+              <div class="progress-score progress-score-secondary">
+                <span>{{ overallProgressPercent }}%</span>
+              </div>
+            </div>
+
+            <div class="progress-track-wrap">
+              <div class="progress-track progress-track-season" role="progressbar" aria-label="All weeks progress" :aria-valuemin="0" :aria-valuemax="100" :aria-valuenow="overallProgressPercent">
+                <div class="progress-fill progress-fill-season" :style="{ width: `${overallProgressPercent}%` }" />
+              </div>
+
+              <div class="progress-pips" aria-hidden="true">
+                <span v-for="milestone in progressMilestones" :key="`season-${milestone}`" class="progress-pip progress-pip-secondary" :class="{ active: overallProgressPercent >= milestone }" />
+              </div>
+            </div>
+
+            <div class="all-weeks-meta playful-meta">
+              <span>{{ overallDoneCount }} of {{ overallTotal }} workouts completed</span>
+              <span class="progress-caption">{{ overallTotal - overallDoneCount }} to go</span>
+            </div>
+          </section>
+        </div>
       </header>
 
       <section v-if="isLoading" class="panel">Loading workouts…</section>
@@ -92,7 +128,7 @@ import {
   workoutsByDayForWeek,
   type Workout,
 } from '~/lib/workouts'
-import { isAuthenticated, clearAuthToken } from '~/lib/auth'
+import { isAuthenticated, logout } from '~/lib/auth'
 
 const isLoggedIn = ref(false)
 const anchorDate = ref(new Date())
@@ -127,6 +163,40 @@ const overallProgressPercent = computed(() => {
     return 0
   }
   return Math.round((overallDoneCount.value / overallTotal.value) * 100)
+})
+
+const progressMilestones = [0, 25, 50, 75, 100]
+
+const weekMomentumLabel = computed(() => {
+  if (!totalCount.value) {
+    return 'Recovery mode'
+  }
+  if (progressPercent.value === 100) {
+    return 'Week cleared'
+  }
+  if (progressPercent.value >= 75) {
+    return 'Strong finish'
+  }
+  if (progressPercent.value >= 40) {
+    return 'Good rhythm'
+  }
+  return 'Warm-up phase'
+})
+
+const overallMomentumLabel = computed(() => {
+  if (!overallTotal.value) {
+    return 'Plan loading'
+  }
+  if (overallProgressPercent.value === 100) {
+    return 'Season complete'
+  }
+  if (overallProgressPercent.value >= 70) {
+    return 'Cruising'
+  }
+  if (overallProgressPercent.value >= 35) {
+    return 'Building volume'
+  }
+  return 'Base training'
 })
 
 const weekLabel = computed(() => {
@@ -189,7 +259,7 @@ const handleLogin = () => {
 }
 
 const handleLogout = () => {
-  clearAuthToken()
+  void logout()
   isLoggedIn.value = false
   anchorDate.value = new Date()
 }
@@ -219,12 +289,10 @@ useHead({
   ],
 })
 
-onMounted(() => {
-  // Always reset to current week
+onMounted(async () => {
   anchorDate.value = new Date()
 
-  // Check if already authenticated
-  if (isAuthenticated()) {
+  if (await isAuthenticated()) {
     isLoggedIn.value = true
     loadWorkouts()
   }

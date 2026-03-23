@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { validateCredentials, setAuthToken } from '~/lib/auth'
+import { login } from '~/lib/auth'
 
 const username = ref('')
 const password = ref('')
@@ -54,14 +54,11 @@ const handleLogin = async () => {
   errorMessage.value = ''
   isLoading.value = true
 
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 300))
-
-  if (validateCredentials(username.value, password.value)) {
-    setAuthToken('authenticated')
+  try {
+    await login(username.value, password.value)
     emit('login')
   }
-  else {
+  catch {
     errorMessage.value = 'Invalid username or password'
   }
 
@@ -75,16 +72,21 @@ const handleLogin = async () => {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: #000000;
+  background:
+    radial-gradient(circle at top left, rgba(103, 240, 192, 0.18), transparent 26%),
+    radial-gradient(circle at top right, rgba(255, 111, 145, 0.16), transparent 24%),
+    linear-gradient(180deg, #08101d 0%, #030914 100%);
   padding: 1rem;
 }
 
 .login-box {
   width: 100%;
   max-width: 320px;
-  background: #0d0d0d;
-  border: 1px solid #222222;
+  background: linear-gradient(180deg, rgba(11, 23, 39, 0.95), rgba(8, 18, 33, 0.92));
+  border: 1px solid rgba(132, 170, 255, 0.18);
+  border-radius: 24px;
   padding: 2rem 1.5rem;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
 }
 
 .login-box h1 {
@@ -97,7 +99,7 @@ const handleLogin = async () => {
 
 .login-subtitle {
   margin: 0 0 1.5rem;
-  color: #888888;
+  color: #90a0c0;
   font-size: 0.9rem;
   font-weight: 600;
 }
@@ -117,11 +119,11 @@ const handleLogin = async () => {
 .form-group input {
   width: 100%;
   padding: 0.7rem 0.75rem;
-  border: 1px solid #333333;
-  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
   color: #ffffff;
   font-size: 0.95rem;
-  border-radius: 0;
+  border-radius: 16px;
 }
 
 .form-group input::placeholder {
@@ -130,25 +132,26 @@ const handleLogin = async () => {
 
 .form-group input:focus {
   outline: none;
-  border-color: #666666;
+  border-color: rgba(103, 240, 192, 0.5);
 }
 
 .login-btn {
   width: 100%;
   padding: 0.75rem;
   margin-top: 0.5rem;
-  border: 2px solid #ffffff;
-  background: #ffffff;
-  color: #000000;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #67f0c0, #7de7ff);
+  color: #03131f;
   font-weight: 800;
   font-size: 0.95rem;
   cursor: pointer;
-  transition: all 80ms;
+  transition: all 140ms ease;
+  box-shadow: 0 10px 30px rgba(103, 240, 192, 0.22);
 }
 
 .login-btn:hover:not(:disabled) {
-  background: #dddddd;
-  border-color: #dddddd;
+  background: linear-gradient(135deg, #82ffd7, #8aeaff);
 }
 
 .login-btn:disabled {

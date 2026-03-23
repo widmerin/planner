@@ -1,6 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Running Planner">
-  <rect x="0" y="0" width="64" height="64" fill="#000000"/>
-  <path d="M16 40 Q20 28 28 26 Q36 24 42 30 L45 38 Q44 42 40 43 Q32 44 20 42 Z" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="22" cy="42" r="2.5" fill="#ffffff"/>
-  <circle cx="38" cy="43" r="2.5" fill="#ffffff"/>
+  <defs>
+    <linearGradient id="bg" x1="10" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#122645"/>
+      <stop offset="1" stop-color="#081120"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="14" y1="12" x2="50" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#67f0c0"/>
+      <stop offset="0.55" stop-color="#7de7ff"/>
+      <stop offset="1" stop-color="#ffb84d"/>
+    </linearGradient>
+    <linearGradient id="mark" x1="23" y1="22" x2="40" y2="41" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f7fbff"/>
+      <stop offset="1" stop-color="#d8f8ee"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="18" fill="url(#bg)"/>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="none" stroke="rgba(255,255,255,0.08)"/>
+  <circle cx="32" cy="32" r="19" fill="none" stroke="url(#ring)" stroke-width="5"/>
+  <path d="M24 39 L31 23 L35 31 L40 20" fill="none" stroke="url(#mark)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M21 46 C25 43, 29 42, 34 42 C38 42, 42 43, 45 45" fill="none" stroke="#ff6f91" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
+  <circle cx="46" cy="18" r="3" fill="#67f0c0"/>
 </svg>

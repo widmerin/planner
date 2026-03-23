@@ -1,44 +1,22 @@
-import { useRuntimeConfig } from '#app'
+export const login = async (username: string, password: string): Promise<void> => {
+  await $fetch('/api/auth/login', {
+    method: 'POST',
+    body: { username, password },
+  })
+}
 
-export const validateCredentials = (username: string, password: string): boolean => {
-  // Get credentials from runtime config (set via environment variables)
-  const config = useRuntimeConfig()
-  const validUser = config.public.appUser
-  const validPassword = config.public.appPassword
+export const logout = async (): Promise<void> => {
+  await $fetch('/api/auth/logout', {
+    method: 'POST',
+  })
+}
 
-  // Fallback to environment variables if config not available
-  const user = validUser || process.env.NUXT_PUBLIC_APP_USER || ''
-  const password_ = validPassword || process.env.NUXT_PUBLIC_APP_PASSWORD || ''
-
-  // Failed to load credentials
-  if (!user || !password_) {
-    console.warn('App credentials not configured. Set NUXT_PUBLIC_APP_USER and NUXT_PUBLIC_APP_PASSWORD environment variables.')
+export const isAuthenticated = async (): Promise<boolean> => {
+  try {
+    const response = await $fetch<{ authenticated: boolean }>('/api/auth/session')
+    return Boolean(response.authenticated)
+  }
+  catch {
     return false
   }
-
-  return username === user && password === password_
-}
-
-export const getStoredAuthToken = (): string | null => {
-  if (typeof localStorage === 'undefined') {
-    return null
-  }
-  return localStorage.getItem('weekplanner-auth-token')
-}
-
-export const setAuthToken = (token: string): void => {
-  if (typeof localStorage !== 'undefined') {
-    localStorage.setItem('weekplanner-auth-token', token)
-  }
-}
-
-export const clearAuthToken = (): void => {
-  if (typeof localStorage !== 'undefined') {
-    localStorage.removeItem('weekplanner-auth-token')
-  }
-}
-
-export const isAuthenticated = (): boolean => {
-  const token = getStoredAuthToken()
-  return token === 'authenticated'
 }

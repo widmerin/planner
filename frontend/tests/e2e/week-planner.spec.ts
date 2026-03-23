@@ -5,8 +5,10 @@ test('shows workouts and persists done state', async ({ page }) => {
 
   // Login with credentials from environment variables
   await expect(page.getByRole('heading', { name: 'Week Planner' })).toBeVisible()
-  const username = process.env.NUXT_PUBLIC_APP_USER
-  const password = process.env.NUXT_PUBLIC_APP_PASSWORD
+  const username = process.env.APP_USER ||  ''
+  const password = process.env.APP_PASSWORD  ''
+  expect(username).toBeTruthy()
+  expect(password).toBeTruthy()
   await page.fill('input#username', username)
   await page.fill('input#password', password)
   await page.click('button:has-text("Sign In")')
