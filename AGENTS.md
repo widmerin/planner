@@ -5,13 +5,12 @@
 - An MVP of a Weekplanner for my running schedule 
 - Weekly overview with the planned workouts
 - User can check done workouts
-- Everyhing is stored in local storage
 
 ## Technical Details
-
+- Optimized for mobile use
 - Implemented as a modern NuxtJS app, client rendered
 - The NuxtJS app should be created in a subdirectory `frontend`
-- The data for the workouts are in the trainingsplan_v2.ics
+- The data for the wokrouts are in the trainingsplan_v2.ics
 - persistence if workout is done in localstorage
 - No user management for the MVP
 - Use popular libraries
