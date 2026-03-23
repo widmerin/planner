@@ -12,6 +12,10 @@ export default defineConfig({
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: true,
     timeout: 120000,
+    env: {
+      NUXT_PUBLIC_APP_USER: 'runner',
+      NUXT_PUBLIC_APP_PASSWORD: 'run2026',
+    },
   },
   projects: [
     {
