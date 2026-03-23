@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto'
 
 export const getConfiguredCredentials = () => {
-  const username = process.env.APP_USER || process.env.NUXT_PUBLIC_APP_USER || ''
-  const password = process.env.APP_PASSWORD || process.env.NUXT_PUBLIC_APP_PASSWORD || ''
+  const username = process.env.APP_USER || ''
+  const password = process.env.APP_PASSWORD || ''
 
   return {
     username,

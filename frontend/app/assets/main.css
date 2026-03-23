@@ -58,35 +58,14 @@ body {
 
 .header-top {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
-  gap: 0.6rem;
-  margin-bottom: 0.45rem;
+  margin-bottom: 0.4rem;
   position: relative;
   z-index: 1;
 }
 
 .header-copy {
   min-width: 0;
-}
-
-.logout-btn {
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  padding: 0.34rem 0.55rem;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--muted);
-  font-weight: 700;
-  font-size: 0.72rem;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition: all 140ms ease;
-}
-
-.logout-btn:hover {
-  border-color: rgba(103, 240, 192, 0.5);
-  color: var(--text);
-  background: rgba(103, 240, 192, 0.1);
 }
 
 .eyebrow {

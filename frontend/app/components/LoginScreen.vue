@@ -2,7 +2,6 @@
   <div class="login-container">
     <div class="login-box">
       <h1>Week Planner</h1>
-      <p class="login-subtitle">Running Schedule Tracker</p>
 
       <form @submit.prevent="handleLogin">
         <div class="form-group">
