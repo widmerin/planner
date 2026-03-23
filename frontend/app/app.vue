@@ -12,6 +12,26 @@
         <button type="button" class="btn btn-primary" @click="goToCurrentWeek">Current</button>
         <button type="button" class="btn" @click="goToNextWeek">Next</button>
       </div>
+
+      <section v-if="!isLoading && !loadError" class="progress-card">
+        <div class="progress-meta">
+          <strong>Overall progress</strong>
+          <span>{{ doneCount }} / {{ totalCount }} done ({{ progressPercent }}%)</span>
+        </div>
+        <div class="progress-track" role="progressbar" aria-label="Overall progress" :aria-valuemin="0" :aria-valuemax="100" :aria-valuenow="progressPercent">
+          <div class="progress-fill" :style="{ width: `${progressPercent}%` }" />
+        </div>
+      </section>
+
+      <section v-if="!isLoading && !loadError && overallTotal > 0" class="all-weeks-card">
+        <div class="all-weeks-meta">
+          <strong>All weeks</strong>
+          <span>{{ overallDoneCount }} / {{ overallTotal }} workouts ({{ overallProgressPercent }}%)</span>
+        </div>
+        <div class="progress-track" role="progressbar" aria-label="All weeks progress" :aria-valuemin="0" :aria-valuemax="100" :aria-valuenow="overallProgressPercent">
+          <div class="progress-fill" :style="{ width: `${overallProgressPercent}%` }" />
+        </div>
+      </section>
     </header>
 
     <section v-if="isLoading" class="panel">Loading workouts…</section>
@@ -71,6 +91,30 @@ const doneState = useStorage<Record<string, boolean>>('weekplanner-done-v1', {})
 const weekStart = computed(() => startOfIsoWeek(anchorDate.value))
 const weekDays = computed(() => getIsoWeekDays(weekStart.value))
 const workoutsByDay = computed(() => workoutsByDayForWeek(workouts.value, weekStart.value))
+const weekWorkouts = computed(() => {
+  return weekDays.value.flatMap((day) => workoutsByDay.value[toDayKey(day)] ?? [])
+})
+const totalCount = computed(() => weekWorkouts.value.length)
+const doneCount = computed(() => weekWorkouts.value.filter((workout) => isDone(workout.id)).length)
+const progressPercent = computed(() => {
+  if (!totalCount.value) {
+    return 0
+  }
+  return Math.round((doneCount.value / totalCount.value) * 100)
+})
+
+const overallDoneCount = computed(() => {
+  return workouts.value.filter((workout) => isDone(workout.id)).length
+})
+
+const overallTotal = computed(() => workouts.value.length)
+
+const overallProgressPercent = computed(() => {
+  if (!overallTotal.value) {
+    return 0
+  }
+  return Math.round((overallDoneCount.value / overallTotal.value) * 100)
+})
 
 const weekLabel = computed(() => {
   const firstDay = weekStart.value
@@ -125,6 +169,13 @@ const goToNextWeek = () => {
 const goToCurrentWeek = () => {
   anchorDate.value = new Date()
 }
+
+useHead({
+  title: 'Week Planner',
+  link: [
+    { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+  ],
+})
 
 onMounted(async () => {
   try {
