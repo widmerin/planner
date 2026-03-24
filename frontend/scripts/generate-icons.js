@@ -21,6 +21,7 @@ const sizes = [
   { name: 'app-icon-maskable-192.png', size: 192 },
   { name: 'app-icon-maskable-512.png', size: 512 },
 ];
+const iconScale = 0.78;
 
 async function generateIcons() {
   try {
@@ -28,10 +29,24 @@ async function generateIcons() {
     
     for (const { name, size } of sizes) {
       const outputPath = resolve(publicDir, name);
-      await sharp(sourceIconBuffer)
-        .resize(size, size, {
-          fit: 'cover',
+      const innerSize = Math.round(size * iconScale);
+      const resizedIconBuffer = await sharp(sourceIconBuffer)
+        .resize(innerSize, innerSize, {
+          fit: 'contain',
+          background: { r: 0, g: 0, b: 0, alpha: 0 },
         })
+        .png()
+        .toBuffer();
+
+      await sharp({
+        create: {
+          width: size,
+          height: size,
+          channels: 4,
+          background: { r: 0, g: 0, b: 0, alpha: 0 },
+        },
+      })
+        .composite([{ input: resizedIconBuffer, gravity: 'center' }])
         .png()
         .toFile(outputPath);
       
