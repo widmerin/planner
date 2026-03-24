@@ -82,13 +82,10 @@
 
       <section v-else class="week-grid">
         <article v-for="day in weekDays" :key="toDayKey(day)" class="day-card">
-          <header class="day-header">
-            <h2>{{ formatDayLabel(day) }}</h2>
-            <p>{{ formatShortDate(day) }}</p>
-          </header>
+          <div class="day-label">{{ formatDayLabel(day) }} • {{ formatShortDate(day) }}</div>
 
           <ul v-if="workoutsForDay(day).length" class="workout-list">
-            <li v-for="workout in workoutsForDay(day)" :key="workout.id" class="workout-item">
+            <li v-for="workout in workoutsForDay(day)" :key="workout.id" class="workout-item" :class="{ done: isDone(workout.id) }">
               <label class="check-row">
                 <input
                   type="checkbox"
@@ -264,7 +261,7 @@ const handleLogout = () => {
 
 const loadWorkouts = async () => {
   try {
-    const response = await fetch('/trainingsplan_v2.ics')
+    const response = await fetch('/data/trainingsplan_v2.ics')
     if (!response.ok) {
       throw new Error(`Could not load calendar: ${response.status}`)
     }

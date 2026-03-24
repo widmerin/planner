@@ -392,23 +392,14 @@ h1 {
   background: linear-gradient(90deg, var(--accent), #7de7ff, var(--accent-warm));
 }
 
-.day-header h2 {
-  margin: 0;
-  font-size: 0.92rem;
-  font-weight: 900;
-  letter-spacing: -0.01em;
-}
-
-.day-header p {
-  margin: 0.15rem 0 0.45rem;
+.day-label {
+  display: block;
   color: var(--muted);
-  font-size: 0.74rem;
-  font-weight: 600;
-}
-
-.day-header {
-  position: relative;
-  z-index: 1;
+  font-size: 0.63rem;
+  font-weight: 700;
+  margin-bottom: 0.28rem;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
 }
 
 .workout-list {
@@ -449,8 +440,20 @@ h1 {
   gap: 0.08rem;
 }
 
+.workout-item.done {
+  padding: 0.15rem 0.52rem;
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.04);
+  box-shadow: none;
+}
+
 .workout-content.done {
-  opacity: 0.5;
+  opacity: 0.45;
+}
+
+.workout-content.done .time,
+.workout-content.done .description {
+  display: none;
 }
 
 .workout-content.done strong {
