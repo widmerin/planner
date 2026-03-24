@@ -43,7 +43,7 @@ async function generateIcons() {
           width: size,
           height: size,
           channels: 4,
-          background: { r: 0, g: 0, b: 0, alpha: 0 },
+          background: { r: 0, g: 0, b: 0, alpha: 1 },
         },
       })
         .composite([{ input: resizedIconBuffer, gravity: 'center' }])
