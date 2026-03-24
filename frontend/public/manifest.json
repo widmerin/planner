@@ -1,6 +1,6 @@
 {
-  "name": "Week Planner – Running Schedule",
-  "short_name": "Week Planner",
+  "name": "Planner",
+  "short_name": "Planner",
   "description": "Track your half-marathon training week by week",
   "start_url": "/",
   "scope": "/",

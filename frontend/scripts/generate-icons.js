@@ -7,10 +7,13 @@
 
 import sharp from 'sharp';
 import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import { dirname, resolve } from 'path';
+import { fileURLToPath } from 'url';
 
-const svgPath = resolve('./public/app-icon.svg');
-const publicDir = resolve('./public');
+const scriptDir = dirname(fileURLToPath(import.meta.url));
+const frontendRoot = resolve(scriptDir, '..');
+const sourceIconPath = resolve(frontendRoot, 'public/running-shoes_5358147.png');
+const publicDir = resolve(frontendRoot, 'public');
 
 const sizes = [
   { name: 'app-icon-192.png', size: 192 },
@@ -21,14 +24,13 @@ const sizes = [
 
 async function generateIcons() {
   try {
-    const svgBuffer = readFileSync(svgPath);
+    const sourceIconBuffer = readFileSync(sourceIconPath);
     
     for (const { name, size } of sizes) {
       const outputPath = resolve(publicDir, name);
-      await sharp(svgBuffer)
+      await sharp(sourceIconBuffer)
         .resize(size, size, {
-          fit: 'contain',
-          background: { r: 0, g: 217, b: 163, alpha: 1 },
+          fit: 'cover',
         })
         .png()
         .toFile(outputPath);

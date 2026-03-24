@@ -1,51 +1,27 @@
 <svg viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background gradient -->
-  <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#00d9a3;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#00a8cc;stop-opacity:1" />
-    </linearGradient>
-    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#ff8c42;stop-opacity:1" />
-    </linearGradient>
-  </defs>
-  
-  <!-- Rounded background -->
-  <rect width="192" height="192" rx="45" fill="url(#bgGrad)"/>
-  
-  <!-- Calendar grid (background element) -->
-  <g opacity="0.15">
-    <rect x="30" y="60" width="132" height="90" rx="8" fill="white" stroke="white" stroke-width="1"/>
-    <line x1="30" y1="80" x2="162" y2="80" stroke="white" stroke-width="1"/>
-    <line x1="30" y1="100" x2="162" y2="100" stroke="white" stroke-width="1"/>
-    <line x1="30" y1="120" x2="162" y2="120" stroke="white" stroke-width="1"/>
-    <line x1="60" y1="60" x2="60" y2="150" stroke="white" stroke-width="1"/>
-    <line x1="90" y1="60" x2="90" y2="150" stroke="white" stroke-width="1"/>
-    <line x1="120" y1="60" x2="120" y2="150" stroke="white" stroke-width="1"/>
-  </g>
-  
-  <!-- Running shoe silhouette -->
-  <g transform="translate(50, 50)">
-    <!-- Shoe sole -->
-    <path d="M 15 35 Q 25 40 45 40 Q 55 38 60 35 L 60 38 Q 55 42 45 43 Q 25 43 15 38 Z" fill="white" opacity="0.9"/>
-    
-    <!-- Shoe body/upper -->
-    <path d="M 15 28 Q 15 20 20 18 Q 25 16 35 16 Q 45 15 55 18 Q 60 20 60 28 Q 58 25 52 24 Q 45 22 35 23 Q 25 24 18 26 Z" fill="white" opacity="0.95"/>
-    
-    <!-- Shoe accent stripe -->
-    <path d="M 20 26 Q 30 24 45 25 Q 55 26 58 28" stroke="url(#accentGrad)" stroke-width="3" fill="none" stroke-linecap="round"/>
-  </g>
-  
-  <!-- Running motion lines -->
-  <g opacity="0.8">
-    <path d="M 120 70 L 145 65" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-    <path d="M 115 85 L 145 85" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-    <path d="M 120 100 L 145 105" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-  </g>
-  
-  <!-- Checkmark (for "done" tracking) -->
-  <g opacity="0.9">
-    <path d="M 85 110 L 95 120 L 110 105" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-  </g>
+  <rect width="192" height="192" rx="44" fill="#ffffff" />
+  <rect x="4" y="4" width="184" height="184" rx="40" fill="none" stroke="#000000" stroke-width="6" />
+
+  <path
+    d="M 34 115 C 47 131 63 139 86 139 H 130 C 142 139 150 131 150 120 C 150 110 143 103 133 103 H 115 C 102 109 91 113 76 113 C 61 113 49 110 39 104 Z"
+    fill="#000000"
+  />
+
+  <path
+    d="M 45 108 C 58 115 72 118 88 118 C 102 118 113 114 124 109"
+    fill="none"
+    stroke="#ffffff"
+    stroke-width="7"
+    stroke-linecap="round"
+  />
+
+  <path
+    d="M 61 100 L 73 96 L 85 94"
+    fill="none"
+    stroke="#ffffff"
+    stroke-width="6"
+    stroke-linecap="round"
+  />
+
+  <rect x="118" y="121" width="22" height="6" rx="3" fill="#ffffff" />
 </svg>
