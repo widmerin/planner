@@ -8,7 +8,7 @@ import {
   workoutsByDayForWeek,
 } from '../app/lib/workouts'
 
-const fixturePath = resolve(process.cwd(), '../data/trainingsplan_v2.ics')
+const fixturePath = resolve(process.cwd(), '../frontend/public/data/trainingsplan_v2.ics')
 const fixtureIcs = readFileSync(fixturePath, 'utf8')
 
 describe('workouts parser', () => {
