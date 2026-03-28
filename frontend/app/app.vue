@@ -88,7 +88,7 @@
       <section v-else-if="loadError" class="panel panel-error">{{ loadError }}</section>
 
       <section v-else class="week-grid">
-        <article v-for="day in weekDays" :key="toDayKey(day)" class="day-card">
+        <article v-for="day in weekDays" :key="toDayKey(day)" class="day-card" :class="{ today: isToday(day) }">
           <div class="day-label">{{ formatDayLabel(day) }} • {{ formatShortDate(day) }}</div>
 
           <ul v-if="workoutsForDay(day).length" class="workout-list">
@@ -96,7 +96,7 @@
               v-for="workout in workoutsForDay(day)"
               :key="workout.id"
               class="workout-item"
-              :class="{ done: isDone(workout.id), 'today-workout': isToday(day) }"
+              :class="{ done: isDone(workout.id) }"
             >
               <label class="check-row">
                 <input
