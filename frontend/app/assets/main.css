@@ -71,7 +71,7 @@ body {
 }
 
 .eyebrow {
-  margin: 0 0 0.05rem;
+  margin: 0 0 0.2rem;
   font-size: 0.62rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -80,7 +80,7 @@ body {
 }
 
 h1 {
-  margin: 0;
+  margin: 0 0 0.14rem;
   font-size: 1.45rem;
   letter-spacing: -0.03em;
   font-weight: 900;
@@ -90,7 +90,7 @@ h1 {
 .subtitle {
   display: inline-flex;
   align-items: center;
-  margin: 0.3rem 0 0;
+  margin: 0.36rem 0 0;
   padding: 0.18rem 0.42rem;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.08);
