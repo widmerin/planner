@@ -92,7 +92,12 @@
           <div class="day-label">{{ formatDayLabel(day) }} • {{ formatShortDate(day) }}</div>
 
           <ul v-if="workoutsForDay(day).length" class="workout-list">
-            <li v-for="workout in workoutsForDay(day)" :key="workout.id" class="workout-item" :class="{ done: isDone(workout.id) }">
+            <li
+              v-for="workout in workoutsForDay(day)"
+              :key="workout.id"
+              class="workout-item"
+              :class="{ done: isDone(workout.id), 'today-workout': isToday(day) }"
+            >
               <label class="check-row">
                 <input
                   type="checkbox"
@@ -104,7 +109,7 @@
                 <span class="workout-content" :class="{ done: isDone(workout.id) }">
                   <span class="workout-title-row">
                     <strong>{{ workout.summary }}</strong>
-                    <span v-if="getPace(workout.id)" class="pace-inline">· {{ getPace(workout.id) }} min/km</span>
+                    <span v-if="canTrackPace(workout) && getPace(workout.id)" class="pace-inline">· {{ getPace(workout.id) }} min/km</span>
                   </span>
                   <span class="time">{{ formatTimeRange(workout) }}</span>
                   <span v-if="workout.description" class="description">{{ workout.description }}</span>
@@ -191,6 +196,7 @@ const touchStartY = ref<number | null>(null)
 
 const weekStart = computed(() => startOfIsoWeek(anchorDate.value))
 const weekDays = computed(() => getIsoWeekDays(weekStart.value))
+const todayDayKey = computed(() => toDayKey(new Date()))
 const workoutsByDay = computed(() => workoutsByDayForWeek(workouts.value, weekStart.value))
 const weekWorkouts = computed(() => {
   return weekDays.value.flatMap((day) => workoutsByDay.value[toDayKey(day)] ?? [])
@@ -280,6 +286,10 @@ const workoutsForDay = (date: Date) => {
   return workoutsByDay.value[toDayKey(date)] ?? []
 }
 
+const isToday = (date: Date) => {
+  return toDayKey(date) === todayDayKey.value
+}
+
 const activePaceWorkout = computed(() => {
   if (!activePaceWorkoutId.value) {
     return null
@@ -290,10 +300,40 @@ const activePaceWorkout = computed(() => {
 
 const isDone = (id: string) => Boolean(doneState.value[id])
 
+const canTrackPace = (workout: Workout) => {
+  const summary = workout.summary.toLowerCase()
+  return !summary.includes('yoga') && !summary.includes('fahrrad')
+}
+
+const canTrackPaceById = (id: string) => {
+  const workout = workouts.value.find((entry) => entry.id === id)
+  if (!workout) {
+    return false
+  }
+
+  return canTrackPace(workout)
+}
+
 const getPace = (id: string) => paceState.value[id] ?? ''
 
-const setPace = (id: string, pace: string) => {
+const normalizePace = (pace: string) => {
   const value = pace.trim()
+  if (!value) {
+    return ''
+  }
+
+  const match = value.match(/^(\d{1,2})[\.,:](\d{1,2})$/)
+  if (!match) {
+    return value
+  }
+
+  const minutes = String(Number.parseInt(match[1], 10))
+  const seconds = String(Number.parseInt(match[2], 10)).padStart(2, '0')
+  return `${minutes}:${seconds}`
+}
+
+const setPace = (id: string, pace: string) => {
+  const value = normalizePace(pace)
 
   if (!value) {
     const { [id]: _, ...rest } = paceState.value
@@ -325,7 +365,7 @@ const onDoneChange = (id: string, event: Event) => {
 
   setDone(id, checked)
 
-  if (checked) {
+  if (checked && canTrackPaceById(id)) {
     openPaceModal(id)
   }
 }
