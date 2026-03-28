@@ -12,16 +12,12 @@
             <h1>Week Planner</h1>
             <p class="subtitle">{{ weekLabel }}</p>
           </div>
-        </div>
 
-        <div class="week-controls">
-          <button type="button" class="btn" @click="goToPreviousWeek">Prev</button>
-          <button type="button" class="btn btn-primary" @click="goToCurrentWeek">Today</button>
-          <button type="button" class="btn" @click="goToNextWeek">Next</button>
-        </div>
-
-        <div class="export-actions">
-          <button type="button" class="btn" @click="exportWorkoutsAsJson">Export JSON</button>
+          <div class="week-controls week-controls-compact">
+            <button type="button" class="btn btn-nav" aria-label="Previous week" @click="goToPreviousWeek">&lt;</button>
+            <button type="button" class="btn btn-primary btn-today" @click="goToCurrentWeek">Today</button>
+            <button type="button" class="btn btn-nav" aria-label="Next week" @click="goToNextWeek">&gt;</button>
+          </div>
         </div>
 
         <div v-if="!isLoading && !loadError" class="progress-stack">
@@ -114,6 +110,13 @@
           <p v-else class="empty">No workout planned.</p>
         </article>
       </section>
+
+      <footer v-if="!isLoading && !loadError" class="page-footer">
+        <button type="button" class="btn export-btn" @click="exportWorkoutsAsJson">
+          <span aria-hidden="true">⤓</span>
+          <span>Export JSON</span>
+        </button>
+      </footer>
 
       <div
         v-if="activePaceWorkout"

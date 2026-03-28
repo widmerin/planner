@@ -58,8 +58,10 @@ body {
 
 .header-top {
   display: flex;
-  align-items: flex-start;
-  margin-bottom: 0.4rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.48rem;
+  margin-bottom: 0.32rem;
   position: relative;
   z-index: 1;
 }
@@ -106,11 +108,12 @@ h1 {
   z-index: 1;
 }
 
-.export-actions {
-  margin-top: 0.38rem;
-  display: grid;
-  position: relative;
-  z-index: 1;
+.week-controls-compact {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.22rem;
+  flex-shrink: 0;
 }
 
 .btn {
@@ -141,6 +144,49 @@ h1 {
 .btn-primary:hover {
   background: linear-gradient(135deg, #82ffd7, #8aeaff);
   border-color: transparent;
+}
+
+.btn-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  min-width: 1.9rem;
+  padding: 0.22rem;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+}
+
+.btn-today {
+  padding: 0.2rem 0.38rem;
+  border-radius: 10px;
+  font-size: 0.61rem;
+  min-height: 1.72rem;
+}
+
+.page-footer {
+  margin-top: 0.72rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  width: auto;
+  max-width: max-content;
+  padding: 0.34rem 0.5rem;
+  border-radius: 10px;
+  font-size: 0.66rem;
+}
+
+.export-btn span:first-child {
+  font-size: 0.82rem;
+  line-height: 1;
 }
 
 .progress-stack {
@@ -581,19 +627,18 @@ h1 {
 }
 
 @media (max-width: 640px) {
-  .header-top,
   .progress-meta,
   .all-weeks-meta {
     flex-direction: column;
   }
 
   .header-top {
-    align-items: stretch;
+    align-items: flex-start;
+    gap: 0.38rem;
   }
 
   .week-controls {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.35rem;
+    gap: 0.3rem;
   }
 
   .playful-meta {
@@ -623,6 +668,22 @@ h1 {
 
   .week-controls {
     gap: 0.28rem;
+  }
+
+  .btn-nav {
+    width: 1.76rem;
+    min-width: 1.76rem;
+  }
+
+  .btn-today {
+    padding: 0.18rem 0.3rem;
+    font-size: 0.58rem;
+    min-height: 1.62rem;
+  }
+
+  .export-btn {
+    padding: 0.3rem 0.44rem;
+    font-size: 0.62rem;
   }
 
   .btn {
