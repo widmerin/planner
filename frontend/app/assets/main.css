@@ -697,12 +697,14 @@ h1 {
   }
 
   .header-top {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
   }
 
   .header-actions {
     justify-content: flex-end;
+    flex-shrink: 0;
   }
 
   .week-controls {
