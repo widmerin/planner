@@ -106,6 +106,13 @@ h1 {
   z-index: 1;
 }
 
+.export-actions {
+  margin-top: 0.38rem;
+  display: grid;
+  position: relative;
+  z-index: 1;
+}
+
 .btn {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
@@ -441,7 +448,7 @@ h1 {
 }
 
 .workout-item.done {
-  padding: 0.15rem 0.52rem;
+  padding: 0.52rem;
   background: transparent;
   border-color: rgba(255, 255, 255, 0.04);
   box-shadow: none;
@@ -467,6 +474,26 @@ h1 {
   line-height: 1.15;
 }
 
+.workout-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.28rem;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.workout-title-row strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pace-inline {
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
 .time {
   color: var(--muted);
   font-size: 0.74rem;
@@ -476,6 +503,73 @@ h1 {
 .description {
   color: #7585a8;
   font-size: 0.72rem;
+}
+
+.pace-label {
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pace-input {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  padding: 0.34rem 0.5rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.pace-input::placeholder {
+  color: #7082a8;
+}
+
+.pace-input:focus {
+  outline: 1px solid rgba(103, 240, 192, 0.7);
+  border-color: rgba(103, 240, 192, 0.7);
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(3, 8, 17, 0.72);
+  backdrop-filter: blur(4px);
+}
+
+.pace-modal {
+  width: min(100%, 380px);
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 0.9rem;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
+}
+
+.pace-modal h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.pace-modal-summary {
+  margin: 0.28rem 0 0.65rem;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.pace-modal-actions {
+  margin-top: 0.65rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.4rem;
 }
 
 .empty {

@@ -20,6 +20,10 @@
           <button type="button" class="btn" @click="goToNextWeek">Next</button>
         </div>
 
+        <div class="export-actions">
+          <button type="button" class="btn" @click="exportWorkoutsAsJson">Export JSON</button>
+        </div>
+
         <div v-if="!isLoading && !loadError" class="progress-stack">
           <section class="progress-card progress-card-week">
             <div class="progress-card-head">
@@ -91,13 +95,17 @@
                   type="checkbox"
                   :checked="isDone(workout.id)"
                   :aria-label="`Mark ${workout.summary} done`"
-                  @change="toggleDone(workout.id)"
+                  @change="onDoneChange(workout.id, $event)"
                 >
 
                 <span class="workout-content" :class="{ done: isDone(workout.id) }">
-                  <strong>{{ workout.summary }}</strong>
+                  <span class="workout-title-row">
+                    <strong>{{ workout.summary }}</strong>
+                    <span v-if="getPace(workout.id)" class="pace-inline">· {{ getPace(workout.id) }} min/km</span>
+                  </span>
                   <span class="time">{{ formatTimeRange(workout) }}</span>
                   <span v-if="workout.description" class="description">{{ workout.description }}</span>
+
                 </span>
               </label>
             </li>
@@ -106,6 +114,40 @@
           <p v-else class="empty">No workout planned.</p>
         </article>
       </section>
+
+      <div
+        v-if="activePaceWorkout"
+        class="modal-backdrop"
+        role="presentation"
+        @click="closePaceModal"
+      >
+        <section
+          class="pace-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="pace-modal-title"
+          @click.stop
+        >
+          <h2 id="pace-modal-title">Add pace</h2>
+          <p class="pace-modal-summary">{{ activePaceWorkout.summary }}</p>
+
+          <label for="pace-modal-input" class="pace-label">Pace (min/km)</label>
+          <input
+            id="pace-modal-input"
+            v-model="paceDraft"
+            class="pace-input"
+            type="text"
+            inputmode="decimal"
+            placeholder="e.g. 6:05"
+            @keyup.enter="savePaceFromModal"
+          >
+
+          <div class="pace-modal-actions">
+            <button type="button" class="btn" @click="closePaceModal">Skip</button>
+            <button type="button" class="btn btn-primary" @click="savePaceFromModal">Save</button>
+          </div>
+        </section>
+      </div>
     </main>
   </div>
 </template>
@@ -131,6 +173,9 @@ const workouts = ref<Workout[]>([])
 const isLoading = ref(true)
 const loadError = ref('')
 const doneState = useStorage<Record<string, boolean>>('weekplanner-done-v1', {})
+const paceState = useStorage<Record<string, string>>('weekplanner-pace-v1', {})
+const activePaceWorkoutId = ref<string | null>(null)
+const paceDraft = ref('')
 
 const weekStart = computed(() => startOfIsoWeek(anchorDate.value))
 const weekDays = computed(() => getIsoWeekDays(weekStart.value))
@@ -223,13 +268,101 @@ const workoutsForDay = (date: Date) => {
   return workoutsByDay.value[toDayKey(date)] ?? []
 }
 
+const activePaceWorkout = computed(() => {
+  if (!activePaceWorkoutId.value) {
+    return null
+  }
+
+  return workouts.value.find((workout) => workout.id === activePaceWorkoutId.value) ?? null
+})
+
 const isDone = (id: string) => Boolean(doneState.value[id])
 
-const toggleDone = (id: string) => {
+const getPace = (id: string) => paceState.value[id] ?? ''
+
+const setPace = (id: string, pace: string) => {
+  const value = pace.trim()
+
+  if (!value) {
+    const { [id]: _, ...rest } = paceState.value
+    paceState.value = rest
+    return
+  }
+
+  paceState.value = {
+    ...paceState.value,
+    [id]: value,
+  }
+}
+
+const setDone = (id: string, done: boolean) => {
+  if (!done) {
+    const { [id]: _, ...rest } = paceState.value
+    paceState.value = rest
+  }
+
   doneState.value = {
     ...doneState.value,
-    [id]: !doneState.value[id],
+    [id]: done,
   }
+}
+
+const onDoneChange = (id: string, event: Event) => {
+  const checkbox = event.target as HTMLInputElement | null
+  const checked = Boolean(checkbox?.checked)
+
+  setDone(id, checked)
+
+  if (checked) {
+    openPaceModal(id)
+  }
+}
+
+const openPaceModal = (id: string) => {
+  activePaceWorkoutId.value = id
+  paceDraft.value = getPace(id)
+}
+
+const closePaceModal = () => {
+  activePaceWorkoutId.value = null
+  paceDraft.value = ''
+}
+
+const savePaceFromModal = () => {
+  if (!activePaceWorkoutId.value) {
+    return
+  }
+
+  setPace(activePaceWorkoutId.value, paceDraft.value)
+  closePaceModal()
+}
+
+const exportWorkoutsAsJson = () => {
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    workouts: workouts.value.map((workout) => ({
+      id: workout.id,
+      uid: workout.uid,
+      summary: workout.summary,
+      description: workout.description,
+      start: workout.start.toISOString(),
+      end: workout.end ? workout.end.toISOString() : null,
+      isAllDay: workout.isAllDay,
+      done: isDone(workout.id),
+      pace: getPace(workout.id) || null,
+    })),
+  }
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  const day = new Date().toISOString().slice(0, 10)
+
+  link.href = url
+  link.download = `workouts-export-${day}.json`
+  link.click()
+
+  URL.revokeObjectURL(url)
 }
 
 const goToPreviousWeek = () => {
