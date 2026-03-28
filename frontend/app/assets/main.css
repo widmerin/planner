@@ -83,14 +83,7 @@ body {
 
 .header-brand {
   display: grid;
-  gap: 0.02rem;
-}
-
-.title-line {
-  display: flex;
-  align-items: center;
-  gap: 0.48rem;
-  flex-wrap: wrap;
+  gap: 0.18rem;
 }
 
 .eyebrow {
@@ -116,6 +109,8 @@ h1 {
   align-items: center;
   margin: 0;
   padding: 0.16rem 0.4rem;
+  width: fit-content;
+  max-width: 100%;
   border-radius: 999px;
   border: 1px solid rgba(103, 240, 192, 0.24);
   background: rgba(103, 240, 192, 0.1);
@@ -672,10 +667,6 @@ h1 {
     gap: 0.44rem;
   }
 
-  .title-line {
-    gap: 0.38rem;
-  }
-
   .week-controls {
     gap: 0.3rem;
   }
@@ -712,11 +703,6 @@ h1 {
 
   .header-actions {
     justify-content: flex-end;
-  }
-
-  .title-line {
-    display: grid;
-    gap: 0.26rem;
   }
 
   .week-controls {

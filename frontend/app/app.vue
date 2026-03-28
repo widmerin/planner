@@ -9,11 +9,8 @@
         <div class="header-top">
           <div class="header-copy header-brand">
             <p class="eyebrow">Running Schedule</p>
-
-            <div class="title-line">
-              <h1>Week Planner</h1>
-              <p class="subtitle">{{ weekLabel }}</p>
-            </div>
+            <h1>Week Planner</h1>
+            <p class="subtitle">{{ weekLabel }}</p>
           </div>
 
           <div class="header-actions">
