@@ -2,7 +2,12 @@
   <div>
     <LoginScreen v-if="!isLoggedIn" @login="handleLogin" />
 
-    <main v-else class="page">
+    <main
+      v-else
+      class="page"
+      @touchstart.passive="onTouchStart"
+      @touchend.passive="onTouchEnd"
+    >
       <NuxtRouteAnnouncer />
 
       <header class="page-header">
@@ -181,6 +186,8 @@ const doneState = useStorage<Record<string, boolean>>('weekplanner-done-v1', {})
 const paceState = useStorage<Record<string, string>>('weekplanner-pace-v1', {})
 const activePaceWorkoutId = ref<string | null>(null)
 const paceDraft = ref('')
+const touchStartX = ref<number | null>(null)
+const touchStartY = ref<number | null>(null)
 
 const weekStart = computed(() => startOfIsoWeek(anchorDate.value))
 const weekDays = computed(() => getIsoWeekDays(weekStart.value))
@@ -384,6 +391,49 @@ const goToNextWeek = () => {
 
 const goToCurrentWeek = () => {
   anchorDate.value = new Date()
+}
+
+const onTouchStart = (event: TouchEvent) => {
+  if (activePaceWorkout.value) {
+    return
+  }
+
+  const touch = event.changedTouches.item(0)
+  if (!touch) {
+    return
+  }
+
+  touchStartX.value = touch.clientX
+  touchStartY.value = touch.clientY
+}
+
+const onTouchEnd = (event: TouchEvent) => {
+  if (activePaceWorkout.value) {
+    return
+  }
+
+  const touch = event.changedTouches.item(0)
+  if (!touch || touchStartX.value === null || touchStartY.value === null) {
+    return
+  }
+
+  const deltaX = touch.clientX - touchStartX.value
+  const deltaY = touch.clientY - touchStartY.value
+  const horizontalThreshold = 56
+
+  touchStartX.value = null
+  touchStartY.value = null
+
+  if (Math.abs(deltaX) < horizontalThreshold || Math.abs(deltaX) <= Math.abs(deltaY)) {
+    return
+  }
+
+  if (deltaX < 0) {
+    goToNextWeek()
+    return
+  }
+
+  goToPreviousWeek()
 }
 
 const handleLogin = () => {
