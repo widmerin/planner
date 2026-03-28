@@ -7,16 +7,21 @@
 
       <header class="page-header">
         <div class="header-top">
-          <div class="header-copy">
+          <div class="header-copy header-brand">
             <p class="eyebrow">Running Schedule</p>
-            <h1>Week Planner</h1>
-            <p class="subtitle">{{ weekLabel }}</p>
+
+            <div class="title-line">
+              <h1>Week Planner</h1>
+              <p class="subtitle">{{ weekLabel }}</p>
+            </div>
           </div>
 
-          <div class="week-controls week-controls-compact">
-            <button type="button" class="btn btn-nav" aria-label="Previous week" @click="goToPreviousWeek">&lt;</button>
-            <button type="button" class="btn btn-primary btn-today" @click="goToCurrentWeek">Today</button>
-            <button type="button" class="btn btn-nav" aria-label="Next week" @click="goToNextWeek">&gt;</button>
+          <div class="header-actions">
+            <div class="week-controls week-controls-compact">
+              <button type="button" class="btn btn-nav" aria-label="Previous week" @click="goToPreviousWeek">&lt;</button>
+              <button type="button" class="btn btn-primary btn-today" @click="goToCurrentWeek">Today</button>
+              <button type="button" class="btn btn-nav" aria-label="Next week" @click="goToNextWeek">&gt;</button>
+            </div>
           </div>
         </div>
 
