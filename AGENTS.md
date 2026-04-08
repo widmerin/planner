@@ -16,7 +16,7 @@
 - Use popular libraries
 - As simple as possible but with an elegant UI
 
-
+    
 ## Strategy
 
 1. Write plan with success criteria for each phase to be checked off. Include project scaffolding, including .gitignore, and rigorous unit testing.

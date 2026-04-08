@@ -110,6 +110,7 @@
                   <span class="workout-title-row">
                     <strong>{{ workout.summary }}</strong>
                     <span v-if="canTrackPace(workout) && getPace(workout.id)" class="pace-inline">· {{ getPace(workout.id) }} min/km</span>
+                    <span v-if="isDone(workout.id) && extractDistance(workout.description)" class="distance-badge">{{ extractDistance(workout.description) }} km</span>
                   </span>
                   <span class="time">{{ formatTimeRange(workout) }}</span>
                   <span v-if="workout.description" class="description">{{ workout.description }}</span>
@@ -315,6 +316,11 @@ const canTrackPaceById = (id: string) => {
 }
 
 const getPace = (id: string) => paceState.value[id] ?? ''
+
+const extractDistance = (description: string): string => {
+  const match = description.match(/^(\d+(?:[.,]\d+)?)\s*km/i)
+  return match ? match[1] : ''
+}
 
 const normalizePace = (pace: string) => {
   const value = pace.trim()
