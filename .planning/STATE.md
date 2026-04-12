@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-04-12)
 
 | Field | Value |
 |-------|-------|
-| Current Phase | Phase 3 (Offline Sync) |
+| Current Phase | None (Phases 1-2 complete) |
 | Mode | YOLO |
 | Last Transition | Phase 2 → Phase 3 |
 
@@ -20,9 +20,10 @@ See: .planning/PROJECT.md (updated 2026-04-12)
 
 | Phase | Name | Status | Started | Completed |
 |-------|------|--------|---------|-----------|
-| 1 | Workout CRUD | Complete | 2026-04-12 | 2026-04-12 |
-| 2 | Pace Tracking | Complete | 2026-04-12 | 2026-04-12 |
-| 3 | Offline Sync | Pending | — | — |
+| 1 | Workout CRUD | ✓ Complete | 2026-04-12 | 2026-04-12 |
+| 2 | Pace Tracking | ✓ Complete | 2026-04-12 | 2026-04-12 |
+| 3 | Testing | Pending | — | — |
+| 4 | Code Review | Pending | — | — |
 
 ## Active Work
 
@@ -34,26 +35,19 @@ None.
 
 ## Recent Changes
 
-- **2026-04-12**: Phases 1 & 2 complete - All fixes applied
-  - Fixed EditWorkoutModal date/time handling
-  - Fixed API routes to use runtimeConfig
-  - Fixed PATCH endpoint field names
-  - Removed database columns that don't exist (source, edited_by_user)
-  - Removed debug console.log statements
+- **2026-04-12**: MVP Complete - Phases 1 & 2 finished
+  - All v1 requirements implemented
+  - 26 unit tests passing
+  - Date/time handling fixed
+  - API routes fixed for runtime config
 - **2026-04-12**: Phase 2 completed - Pace Tracking
   - Added visible pace button (⏱) on all run workouts
-  - User can add/update pace at any time via button click
   - PACE-01, PACE-02, PACE-03: All complete
 - **2026-04-12**: Phase 1 completed - Workout CRUD
-  - Added POST /api/workouts endpoint for creating workouts
-  - Added DELETE /api/workouts/[id] endpoint for deleting workouts
-  - Added "Add Workout" button in header
-  - Added delete button with confirmation modal
   - WORK-01, WORK-02, WORK-03, WORK-04: All complete
-- **2026-04-12**: Project initialized with planning documents
 
 ## Notes
 
-- MVP complete: All 10 v1 requirements implemented and tested
-- Phase 3 (Offline Sync) is the final phase
-- 26 unit tests passing
+- MVP complete: All 7 v1 requirements implemented and tested
+- Next: Phase 3 - Testing (E2E tests with mock data)
+- Then: Phase 4 - Code Review & Security

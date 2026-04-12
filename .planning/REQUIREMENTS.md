@@ -18,18 +18,26 @@
 - [x] **PACE-02**: User can add or update pace (min/km) for any completed run workout
 - [x] **PACE-03**: Pace data syncs to Supabase and persists
 
-### Sync & Offline
+## v2 Requirements (Future)
 
-- [ ] **SYNC-01**: Failed sync operations are queued locally
-- [ ] **SYNC-02**: Queued operations retry automatically when connection restored
-- [ ] **SYNC-03**: User sees indicator when offline operations are pending
+### Testing & Quality
 
-## v2 Requirements
+- **TEST-01**: E2E tests for workout CRUD (create, edit, delete)
+- **TEST-02**: E2E tests for pace tracking (add, update)
+- **TEST-03**: E2E tests for week navigation
+- **TEST-04**: Mock data setup for tests to run without Supabase
+
+### Code Quality
+
+- **CODE-01**: Security audit (no hardcoded secrets, input validation)
+- **CODE-02**: Code simplification (remove dead code, consistent patterns)
+- **CODE-03**: Error handling consistency
 
 ### Offline Experience
 
-- **OFLN-01**: Service worker caches app shell for offline viewing
-- **OFLN-02**: Previously loaded workouts viewable offline
+- **OFLN-01**: Failed sync operations are queued locally
+- **OFLN-02**: Queued operations retry automatically when connection restored
+- **OFLN-03**: User sees indicator when offline operations are pending
 
 ### Enhanced Features
 
@@ -51,22 +59,25 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| WORK-01 | Phase 1 | Complete |
-| WORK-02 | Phase 1 | Complete |
-| WORK-03 | Phase 1 | Complete |
-| WORK-04 | Phase 1 | Complete |
-| PACE-01 | Phase 2 | Complete |
-| PACE-02 | Phase 2 | Complete |
-| PACE-03 | Phase 2 | Complete |
-| SYNC-01 | Phase 3 | Pending |
-| SYNC-02 | Phase 3 | Pending |
-| SYNC-03 | Phase 3 | Pending |
+| WORK-01 | Phase 1 | ✓ Complete |
+| WORK-02 | Phase 1 | ✓ Complete |
+| WORK-03 | Phase 1 | ✓ Complete |
+| WORK-04 | Phase 1 | ✓ Complete |
+| PACE-01 | Phase 2 | ✓ Complete |
+| PACE-02 | Phase 2 | ✓ Complete |
+| PACE-03 | Phase 2 | ✓ Complete |
+| TEST-01 | Phase 3 | Pending |
+| TEST-02 | Phase 3 | Pending |
+| TEST-03 | Phase 3 | Pending |
+| TEST-04 | Phase 3 | Pending |
+| CODE-01 | Phase 4 | Pending |
+| CODE-02 | Phase 4 | Pending |
+| CODE-03 | Phase 4 | Pending |
 
 **Coverage:**
-- v1 requirements: 10 total
-- Mapped to phases: 10
-- Unmapped: 0 ✓
+- v1 requirements: 7 total (all complete)
+- v2 requirements: 10 total (pending)
 
 ---
 *Requirements defined: 2026-04-12*
-*Last updated: 2026-04-12 after Phase 2 completion*
+*Last updated: 2026-04-12 after Phase 1 & 2 completion*
