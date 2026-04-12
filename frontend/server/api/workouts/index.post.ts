@@ -9,13 +9,14 @@ interface CreateWorkoutRequest {
 }
 
 export default defineEventHandler(async (event) => {
-  const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL?.trim()
-  const supabaseKey = process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
+  const config = useRuntimeConfig()
+  const supabaseUrl = config.public.supabase.url?.trim()
+  const supabaseKey = config.public.supabase.key?.trim()
 
   if (!supabaseUrl || !supabaseKey) {
     throw createError({
       statusCode: 500,
-      statusMessage: 'Supabase credentials not configured',
+      statusMessage: 'Supabase credentials not configured. Check .env file.',
     })
   }
 
@@ -77,49 +78,43 @@ export default defineEventHandler(async (event) => {
 
   const uid = `user-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 
-  try {
-    const { data, error } = await supabase
-      .from('workouts')
-      .insert({
-        uid,
-        summary: body.summary.trim(),
-        description: body.description?.trim() || null,
-        start_date: startDate.toISOString(),
-        end_date: body.end ? new Date(body.end).toISOString() : null,
-        is_all_day: body.isAllDay ?? false,
-        source: 'user-created',
-        edited_by_user: true,
-      })
-      .select()
-      .single()
+  const { data, error } = await supabase
+    .from('workouts')
+    .insert({
+      uid,
+      summary: body.summary.trim(),
+      description: body.description?.trim() || null,
+      start_date: startDate.toISOString(),
+      end_date: body.end ? new Date(body.end).toISOString() : null,
+      is_all_day: body.isAllDay ?? false,
+      source: 'user-created',
+      edited_by_user: true,
+    })
+    .select()
+    .single()
 
-    if (error) {
-      console.error('Supabase insert error:', error)
-      throw error
-    }
-
-    const normalizedWorkout = {
-      id: data.id,
-      uid: data.uid,
-      summary: data.summary,
-      description: data.description || '',
-      start: new Date(data.start_date),
-      end: data.end_date ? new Date(data.end_date) : null,
-      isAllDay: data.is_all_day,
-      source: data.source,
-      edited_by_user: data.edited_by_user,
-    }
-
-    return {
-      success: true,
-      workout: normalizedWorkout,
-    }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error)
-    console.error('Create workout error:', message)
+  if (error) {
+    console.error('Supabase insert error:', error)
     throw createError({
       statusCode: 500,
-      statusMessage: `Failed to create workout: ${message}`,
+      statusMessage: `Database error: ${error.message}`,
     })
+  }
+
+  const normalizedWorkout = {
+    id: data.id,
+    uid: data.uid,
+    summary: data.summary,
+    description: data.description || '',
+    start: new Date(data.start_date),
+    end: data.end_date ? new Date(data.end_date) : null,
+    isAllDay: data.is_all_day,
+    source: data.source,
+    edited_by_user: data.edited_by_user,
+  }
+
+  return {
+    success: true,
+    workout: normalizedWorkout,
   }
 })

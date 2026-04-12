@@ -4,8 +4,9 @@ import fs from 'fs'
 import path from 'path'
 
 export default defineEventHandler(async () => {
-  const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL?.trim()
-  const supabaseKey = process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
+  const config = useRuntimeConfig()
+  const supabaseUrl = config.public.supabase.url?.trim()
+  const supabaseKey = config.public.supabase.key?.trim()
 
   if (!supabaseUrl || !supabaseKey) {
     throw createError({
@@ -17,7 +18,6 @@ export default defineEventHandler(async () => {
   const supabase = createClient(supabaseUrl, supabaseKey)
 
   try {
-    // Read ICS file - try multiple paths
     let icsContent: string | null = null
     const possiblePaths = [
       path.join(process.cwd(), 'public/data/trainingsplan_v2.ics'),
@@ -39,10 +39,8 @@ export default defineEventHandler(async () => {
       throw new Error(`ICS file not found in any of: ${possiblePaths.join(', ')}`)
     }
 
-    // Parse workouts
     const workouts = parseWorkoutsFromICS(icsContent)
 
-    // Transform for database
     const workoutRows = workouts.map((w) => ({
       uid: w.uid,
       summary: w.summary,
@@ -52,7 +50,6 @@ export default defineEventHandler(async () => {
       is_all_day: w.isAllDay,
     }))
 
-    // Upsert to database
     const { error } = await supabase
       .from('workouts')
       .upsert(workoutRows, { onConflict: 'uid' })

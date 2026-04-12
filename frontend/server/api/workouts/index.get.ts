@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 
 export default defineEventHandler(async (event) => {
-  const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL?.trim()
-  const supabaseKey = process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
+  const config = useRuntimeConfig()
+  const supabaseUrl = config.public.supabase.url?.trim()
+  const supabaseKey = config.public.supabase.key?.trim()
 
   if (!supabaseUrl || !supabaseKey) {
     throw createError({
@@ -14,7 +15,6 @@ export default defineEventHandler(async (event) => {
   const supabase = createClient(supabaseUrl, supabaseKey)
 
   try {
-    // Fetch all workouts
     const { data, error } = await supabase
       .from('workouts')
       .select('*')
@@ -25,7 +25,6 @@ export default defineEventHandler(async (event) => {
       throw error
     }
 
-    // Transform from database format
     const workouts = (data || []).map((row: any) => ({
       id: row.id,
       uid: row.uid,

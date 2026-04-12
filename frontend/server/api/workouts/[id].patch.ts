@@ -9,8 +9,9 @@ interface UpdateWorkoutRequest {
 }
 
 export default defineEventHandler(async (event) => {
-  const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL?.trim()
-  const supabaseKey = process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
+  const config = useRuntimeConfig()
+  const supabaseUrl = config.public.supabase.url?.trim()
+  const supabaseKey = config.public.supabase.key?.trim()
 
   if (!supabaseUrl || !supabaseKey) {
     throw createError({
