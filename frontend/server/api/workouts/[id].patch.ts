@@ -117,9 +117,6 @@ export default defineEventHandler(async (event) => {
       start: new Date(updatedWorkout.start_date),
       end: updatedWorkout.end_date ? new Date(updatedWorkout.end_date) : null,
       isAllDay: updatedWorkout.is_all_day,
-      source: updatedWorkout.source,
-      created_at: updatedWorkout.created_at,
-      updated_at: updatedWorkout.updated_at,
     }
 
     return {
