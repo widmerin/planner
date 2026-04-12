@@ -32,7 +32,6 @@
             id="edit-date"
             :value="formatEditDate(draft.start)"
             type="date"
-            :min="formatEditDate(new Date())"
             @change="onDateChange"
           >
         </div>
