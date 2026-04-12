@@ -17,7 +17,6 @@
             v-model="draft.summary"
             type="text"
             placeholder="e.g., 🏃 Easy Run"
-            required
           >
         </div>
 
@@ -67,7 +66,7 @@
 
         <div class="modal-actions">
           <button type="button" class="btn" :disabled="isSaving" @click="onCancel">Cancel</button>
-          <button type="submit" class="btn btn-primary" :disabled="isSaving || validationErrors.length > 0">
+          <button type="button" class="btn btn-primary" :disabled="isSaving" @click="onSave">
             {{ isSaving ? 'Saving...' : 'Save' }}
           </button>
         </div>
@@ -182,12 +181,15 @@ const onCancel = () => {
 }
 
 const onSave = async () => {
+  console.log('EditWorkoutModal onSave called', { draft: draft.value, errors: validationErrors.value })
   saveError.value = ''
   isSaving.value = true
 
   try {
-    emit('save', draft.value)
+    console.log('Emitting save event with', draft.value)
+    emit('save', { ...draft.value })
   } catch (error) {
+    console.error('onSave error:', error)
     saveError.value = error instanceof Error ? error.message : 'Failed to save workout'
   } finally {
     isSaving.value = false
