@@ -112,10 +112,15 @@ watch(
   () => props.workout,
   (newWorkout) => {
     if (newWorkout) {
+      const startDate = newWorkout.start instanceof Date ? newWorkout.start : new Date(newWorkout.start as string)
+      const endDate = newWorkout.end ? (newWorkout.end instanceof Date ? newWorkout.end : new Date(newWorkout.end as string)) : null
+      
       draft.value = {
-        ...newWorkout,
-        start: new Date(newWorkout.start as Date),
-        end: newWorkout.end ? new Date(newWorkout.end as Date) : null,
+        summary: newWorkout.summary || '',
+        description: newWorkout.description || '',
+        start: new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), startDate.getHours(), startDate.getMinutes()),
+        end: endDate ? new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), endDate.getHours(), endDate.getMinutes()) : null,
+        isAllDay: newWorkout.isAllDay || false,
       }
     }
   },
@@ -151,9 +156,10 @@ const onDateChange = (e: Event) => {
 
 const onStartTimeChange = (e: Event) => {
   const input = e.target as HTMLInputElement
-  const [hours, minutes] = input.value.split(':')
-  const newStart = new Date(draft.value.start!)
-  newStart.setHours(parseInt(hours, 10), parseInt(minutes, 10))
+  const [hours, minutes] = input.value.split(':').map(Number)
+  
+  const currentStart = draft.value.start instanceof Date ? draft.value.start : new Date()
+  const newStart = new Date(currentStart.getFullYear(), currentStart.getMonth(), currentStart.getDate(), hours, minutes)
   draft.value.start = newStart
 }
 
@@ -164,9 +170,10 @@ const onEndTimeChange = (e: Event) => {
     return
   }
 
-  const [hours, minutes] = input.value.split(':')
-  const newEnd = new Date(draft.value.start!)
-  newEnd.setHours(parseInt(hours, 10), parseInt(minutes, 10))
+  const [hours, minutes] = input.value.split(':').map(Number)
+  
+  const currentStart = draft.value.start instanceof Date ? draft.value.start : new Date()
+  const newEnd = new Date(currentStart.getFullYear(), currentStart.getMonth(), currentStart.getDate(), hours, minutes)
   draft.value.end = newEnd
 }
 
