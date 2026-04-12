@@ -530,7 +530,8 @@ const openEditModal = (workout: Workout) => {
 }
 
 const openNewWorkoutModal = () => {
-  const defaultDate = weekStart.value
+  const defaultDate = new Date(weekStart.value)
+  defaultDate.setHours(9, 0, 0, 0)
   editingWorkout.value = {
     summary: '',
     description: '',

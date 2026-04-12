@@ -2,11 +2,14 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
+  formatTime,
   normalizeWorkout,
   parseWorkoutsFromICS,
   startOfIsoWeek,
   toDayKey,
+  validateWorkout,
   workoutsByDayForWeek,
+  type Workout,
 } from '../app/lib/workouts'
 
 const fixturePath = resolve(process.cwd(), '../frontend/public/data/trainingsplan_v2.ics')
@@ -115,5 +118,95 @@ describe('normalizeWorkout', () => {
 
     expect(normalized.start).toBeInstanceOf(Date)
     expect(normalized.end).toBeNull()
+  })
+})
+
+describe('validateWorkout', () => {
+  it('requires summary', () => {
+    const workout: Partial<Workout> = {
+      summary: '',
+      start: new Date('2026-04-15T09:00:00'),
+      isAllDay: false,
+    }
+    expect(validateWorkout(workout)).toContain('Summary is required')
+  })
+
+  it('allows valid workout', () => {
+    const workout: Partial<Workout> = {
+      summary: 'Morning Run',
+      start: new Date('2026-04-15T09:00:00'),
+      isAllDay: false,
+    }
+    expect(validateWorkout(workout)).toHaveLength(0)
+  })
+
+  it('rejects summary over 200 characters', () => {
+    const workout: Partial<Workout> = {
+      summary: 'A'.repeat(201),
+      start: new Date('2026-04-15T09:00:00'),
+      isAllDay: false,
+    }
+    expect(validateWorkout(workout)).toContain('Summary must be 200 characters or less')
+  })
+
+  it('rejects description over 1000 characters', () => {
+    const workout: Partial<Workout> = {
+      summary: 'Morning Run',
+      description: 'A'.repeat(1001),
+      start: new Date('2026-04-15T09:00:00'),
+      isAllDay: false,
+    }
+    expect(validateWorkout(workout)).toContain('Description must be 1000 characters or less')
+  })
+
+  it('rejects end time before start time', () => {
+    const workout: Partial<Workout> = {
+      summary: 'Morning Run',
+      start: new Date('2026-04-15T10:00:00'),
+      end: new Date('2026-04-15T09:00:00'),
+      isAllDay: false,
+    }
+    expect(validateWorkout(workout)).toContain('End time must be after start time')
+  })
+
+  it('rejects end time equal to start time', () => {
+    const workout: Partial<Workout> = {
+      summary: 'Morning Run',
+      start: new Date('2026-04-15T09:00:00'),
+      end: new Date('2026-04-15T09:00:00'),
+      isAllDay: false,
+    }
+    expect(validateWorkout(workout)).toContain('End time must be after start time')
+  })
+
+  it('allows end time after start time', () => {
+    const workout: Partial<Workout> = {
+      summary: 'Morning Run',
+      start: new Date('2026-04-15T09:00:00'),
+      end: new Date('2026-04-15T09:30:00'),
+      isAllDay: false,
+    }
+    expect(validateWorkout(workout)).toHaveLength(0)
+  })
+
+  it('allows all-day events without time', () => {
+    const workout: Partial<Workout> = {
+      summary: 'Rest Day',
+      start: new Date('2026-04-15T00:00:00'),
+      isAllDay: true,
+    }
+    expect(validateWorkout(workout)).toHaveLength(0)
+  })
+})
+
+describe('formatTime', () => {
+  it('formats time correctly', () => {
+    const date = new Date('2026-04-15T09:30:00')
+    expect(formatTime(date)).toBe('09:30')
+  })
+
+  it('pads single digit hours and minutes', () => {
+    const date = new Date('2026-04-15T06:05:00')
+    expect(formatTime(date)).toBe('06:05')
   })
 })
