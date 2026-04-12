@@ -709,23 +709,6 @@ const loadWorkouts = async () => {
   }
 }
 
-const syncWorkoutsToSupabase = async () => {
-  try {
-    const response = await fetch('/api/workouts/sync', { method: 'POST' })
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      console.warn('Sync failed:', errorData.statusMessage || response.status)
-      return false
-    }
-    const data = await response.json()
-    console.log(`✓ Synced ${data.synced} workouts from ICS`)
-    return true
-  }
-  catch (error) {
-    console.warn('Error syncing workouts:', error)
-    return false
-  }
-}
 
 useHead({
   title: 'Week Planner',
@@ -739,8 +722,7 @@ onMounted(async () => {
 
   if (await isAuthenticated()) {
     isLoggedIn.value = true
-    // Sync workouts from ICS to Supabase on first load
-    await syncWorkoutsToSupabase()
+
     // Then load all workouts and completions
     loadWorkouts()
   }

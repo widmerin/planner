@@ -62,23 +62,6 @@ describe('Supabase API Routes', () => {
     })
   })
 
-  describe('POST /api/workouts/sync', () => {
-    it('returns workout count from Supabase', async () => {
-      if (skipTests) return
-
-      const response = await fetch(`${API_URL}/api/workouts/sync`, {
-        method: 'POST',
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        expect(data).toHaveProperty('success', true)
-        expect(data).toHaveProperty('synced')
-        expect(typeof data.synced).toBe('number')
-      }
-    })
-  })
-
   describe('POST /api/workouts/toggle', () => {
     it('requires valid workoutId from database', async () => {
       if (skipTests) return
