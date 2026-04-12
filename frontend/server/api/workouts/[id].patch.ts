@@ -54,76 +54,48 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  if (start_date && end_date && new Date(end_date) <= new Date(start_date)) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'End time must be after start time',
-    })
-  }
+  const updateData: Record<string, any> = {}
+
+  if (summary !== undefined) updateData.summary = summary
+  if (description !== undefined) updateData.description = description
+  if (start_date !== undefined) updateData.start_date = start_date
+  if (end_date !== undefined) updateData.end_date = end_date
+  if (is_all_day !== undefined) updateData.is_all_day = is_all_day
 
   try {
-    // Fetch existing workout to verify it exists
-    const { data: existingWorkout, error: fetchError } = await supabase
-      .from('workouts')
-      .select('*')
-      .eq('id', workoutId)
-      .single()
-
-    if (fetchError || !existingWorkout) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: `Workout ${workoutId} not found`,
-      })
-    }
-
-    // Update workout
-    const updateData: any = {
-      updated_at: new Date().toISOString(),
-    }
-
-    if (summary) updateData.summary = summary
-    if (description !== undefined) updateData.description = description
-    if (start_date) updateData.start_date = start_date
-    if (end_date !== undefined) updateData.end_date = end_date
-    if (is_all_day !== undefined) updateData.is_all_day = is_all_day
-
-    const { error: updateError } = await supabase
+    const { data, error } = await supabase
       .from('workouts')
       .update(updateData)
       .eq('id', workoutId)
-
-    if (updateError) {
-      console.error('Supabase update error:', updateError)
-      throw updateError
-    }
-
-    // Fetch updated workout
-    const { data: updatedWorkout, error: fetchUpdatedError } = await supabase
-      .from('workouts')
-      .select('*')
-      .eq('id', workoutId)
+      .select()
       .single()
 
-    if (fetchUpdatedError) {
-      throw fetchUpdatedError
+    if (error) {
+      console.error('Supabase update error:', error)
+      throw createError({
+        statusCode: 500,
+        statusMessage: `Database error: ${error.message}`,
+      })
     }
 
-    // Transform from database format
     const normalizedWorkout = {
-      id: updatedWorkout.id,
-      uid: updatedWorkout.uid,
-      summary: updatedWorkout.summary,
-      description: updatedWorkout.description || '',
-      start: new Date(updatedWorkout.start_date),
-      end: updatedWorkout.end_date ? new Date(updatedWorkout.end_date) : null,
-      isAllDay: updatedWorkout.is_all_day,
+      id: data.id,
+      uid: data.uid,
+      summary: data.summary,
+      description: data.description || '',
+      start: new Date(data.start_date),
+      end: data.end_date ? new Date(data.end_date) : null,
+      isAllDay: data.is_all_day,
     }
 
     return {
       success: true,
       workout: normalizedWorkout,
     }
-  } catch (error) {
+  } catch (error: any) {
+    if (error.statusCode) {
+      throw error
+    }
     const message = error instanceof Error ? error.message : String(error)
     console.error('Update workout error:', message)
     throw createError({

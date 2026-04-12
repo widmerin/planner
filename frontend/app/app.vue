@@ -599,9 +599,9 @@ const updateWorkout = async (draft: Partial<Workout>) => {
       body: JSON.stringify({
         summary: draft.summary,
         description: draft.description,
-        start: draft.start instanceof Date ? draft.start.toISOString() : draft.start,
-        end: draft.end instanceof Date ? draft.end.toISOString() : draft.end,
-        isAllDay: draft.isAllDay,
+        start_date: draft.start instanceof Date ? draft.start.toISOString() : draft.start,
+        end_date: draft.end instanceof Date ? draft.end.toISOString() : draft.end,
+        is_all_day: draft.isAllDay,
       }),
     })
 
