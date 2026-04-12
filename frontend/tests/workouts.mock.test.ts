@@ -119,6 +119,17 @@ describe('validateWorkout', () => {
     const errors = validateWorkout({ summary: longSummary })
     expect(errors).toContain('Summary must be 200 characters or less')
   })
+
+  it('allows past dates', () => {
+    const pastDate = new Date('2020-01-01T07:00:00Z')
+    const errors = validateWorkout({
+      summary: '🏃 Morning Run',
+      start: pastDate,
+      end: new Date('2020-01-01T07:30:00Z'),
+      isAllDay: false,
+    })
+    expect(errors).toHaveLength(0)
+  })
 })
 
 describe('formatTimeRange', () => {
