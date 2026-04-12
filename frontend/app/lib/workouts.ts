@@ -1,5 +1,3 @@
-import ICAL from 'ical.js'
-
 export type Workout = {
   id: string
   uid: string
@@ -72,37 +70,6 @@ const expandAllDayRange = (start: Date, end: Date | null): Date[] => {
   return days
 }
 
-export const parseWorkoutsFromICS = (icsText: string): Workout[] => {
-  const root = new ICAL.Component(ICAL.parse(icsText))
-  const events = root.getAllSubcomponents('vevent')
-
-  return events
-    .map((component) => {
-      const event = new ICAL.Event(component)
-      const dtStart = component.getFirstPropertyValue('dtstart') as ICAL.Time
-
-      if (!dtStart) {
-        return null
-      }
-
-      const start = event.startDate.toJSDate()
-      const end = event.endDate ? event.endDate.toJSDate() : null
-      const uid = event.uid ?? 'no-uid'
-
-      return {
-        id: `${uid}__${dtStart.toString()}`,
-        uid,
-        summary: event.summary ?? 'Workout',
-        description: event.description ?? '',
-        start,
-        end,
-        isAllDay: event.startDate.isDate,
-      } satisfies Workout
-    })
-    .filter((event): event is Workout => event !== null)
-    .sort((left, right) => left.start.getTime() - right.start.getTime())
-}
-
 export const workoutsByDayForWeek = (
   workouts: Workout[],
   weekStart: Date,
@@ -172,13 +139,18 @@ export const validateWorkout = (workout: Partial<Workout>): string[] => {
     errors.push('End time must be after start time')
   }
 
+  if (workout.start && workout.start < new Date()) {
+    const dateStr = workout.start.toISOString().split('T')[0]
+    const todayStr = new Date().toISOString().split('T')[0]
+    if (dateStr < todayStr) {
+      errors.push('Cannot create workouts in the past')
+    }
+  }
+
   return errors
 }
 
-export const formatTime = (date: Date | null | undefined): string => {
-  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
-    return ''
-  }
+export const formatTime = (date: Date): string => {
   const hours = String(date.getHours()).padStart(2, '0')
   const minutes = String(date.getMinutes()).padStart(2, '0')
   return `${hours}:${minutes}`

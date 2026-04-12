@@ -14,17 +14,17 @@ export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
   use: {
-    baseURL: 'http://127.0.0.1:4173',
+    baseURL: 'http://127.0.0.1:5173',
     trace: 'on-first-retry',
   },
   webServer: {
-    command: 'npm run dev -- --host 127.0.0.1 --port 4173',
-    url: 'http://127.0.0.1:4173',
+    command: 'npm run dev -- --host 127.0.0.1 --port 5173',
+    url: 'http://127.0.0.1:5173',
     reuseExistingServer: true,
     timeout: 120000,
     env: {
-      APP_USER: process.env.APP_USER,
-      APP_PASSWORD: process.env.APP_PASSWORD,
+      APP_USER: 'testuser',
+      APP_PASSWORD: 'testpass',
     },
   },
   projects: [

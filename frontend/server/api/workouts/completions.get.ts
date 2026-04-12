@@ -1,9 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
 export default defineEventHandler(async () => {
-  const config = useRuntimeConfig()
-  const supabaseUrl = config.public.supabase.url?.trim()
-  const supabaseKey = config.public.supabase.key?.trim()
+  const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL?.trim()
+  const supabaseKey = process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
 
   if (!supabaseUrl || !supabaseKey) {
     throw createError({
@@ -34,6 +33,7 @@ export default defineEventHandler(async () => {
       }
       completions[date].push(row.workout_id)
       
+      // Store pace if available
       if (row.pace) {
         paces[row.workout_id] = row.pace
       }

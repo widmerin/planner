@@ -2,14 +2,13 @@ import { createClient } from '@supabase/supabase-js'
 
 interface SavePaceRequest {
   workoutId: string
-  pace: string
-  date: string
+  pace: string // e.g., "6:05" or empty string to delete
+  date: string // YYYY-MM-DD
 }
 
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
-  const supabaseUrl = config.public.supabase.url?.trim()
-  const supabaseKey = config.public.supabase.key?.trim()
+  const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL?.trim()
+  const supabaseKey = process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
 
   if (!supabaseUrl || !supabaseKey) {
     throw createError({
@@ -31,15 +30,30 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const { error } = await supabase
-      .from('workout_completion')
-      .update({ pace: pace || null })
-      .eq('workout_id', workoutId)
-      .eq('completed_date', date)
+    if (!pace) {
+      // Clear pace for this workout
+      const { error } = await supabase
+        .from('workout_completion')
+        .update({ pace: null })
+        .eq('workout_id', workoutId)
+        .eq('completed_date', date)
 
-    if (error) {
-      console.error('Supabase update error:', error)
-      throw error
+      if (error) {
+        console.error('Supabase update error:', error)
+        throw error
+      }
+    } else {
+      // Save pace for this workout
+      const { error } = await supabase
+        .from('workout_completion')
+        .update({ pace })
+        .eq('workout_id', workoutId)
+        .eq('completed_date', date)
+
+      if (error) {
+        console.error('Supabase update error:', error)
+        throw error
+      }
     }
 
     return {

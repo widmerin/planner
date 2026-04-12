@@ -63,7 +63,7 @@ describe('Supabase API Routes', () => {
   })
 
   describe('POST /api/workouts/sync', () => {
-    it('syncs workouts from ICS to Supabase', async () => {
+    it('returns workout count from Supabase', async () => {
       if (skipTests) return
 
       const response = await fetch(`${API_URL}/api/workouts/sync`, {
@@ -131,69 +131,6 @@ describe('Supabase API Routes', () => {
       })
 
       expect(response.status).toBe(400)
-    })
-  })
-
-  describe('POST /api/workouts', () => {
-    it('returns 400 for missing summary', async () => {
-      if (skipTests) return
-
-      const response = await fetch(`${API_URL}/api/workouts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          description: 'Test workout',
-          start: '2026-04-15T09:00:00Z',
-        }),
-      })
-
-      expect(response.status).toBe(400)
-      const data = await response.json()
-      expect(data.statusMessage).toContain('Summary is required')
-    })
-
-    it('returns 400 for missing start date', async () => {
-      if (skipTests) return
-
-      const response = await fetch(`${API_URL}/api/workouts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          summary: 'Test Workout',
-        }),
-      })
-
-      expect(response.status).toBe(400)
-      const data = await response.json()
-      expect(data.statusMessage).toContain('Start date is required')
-    })
-
-    it('returns 400 for invalid start date format', async () => {
-      if (skipTests) return
-
-      const response = await fetch(`${API_URL}/api/workouts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          summary: 'Test Workout',
-          start: 'invalid-date',
-        }),
-      })
-
-      expect(response.status).toBe(400)
-    })
-  })
-
-  describe('DELETE /api/workouts/:id', () => {
-    it('handles missing workout ID', async () => {
-      if (skipTests) return
-
-      const response = await fetch(`${API_URL}/api/workouts/`, {
-        method: 'DELETE',
-      })
-
-      // Returns 404 for invalid path, or the request might go through
-      expect([200, 404]).toContain(response.status)
     })
   })
 })

@@ -22,9 +22,11 @@ npm run dev
 ## Architecture
 
 - `app/app.vue` — Main planner component
-- `app/lib/workouts.ts` — ICS parsing and date utilities
-- `app/composables/useSupabase.ts` — Supabase client setup
+- `app/lib/workouts.ts` — Date utilities and workout helpers
 - `app/components/LoginScreen.vue` — Auth gate
 - `server/api/workouts/*.ts` — Backend API endpoints
 - `tests/` — Unit and E2E tests
-- `public/data/trainingsplan_v2.ics` — Calendar data
+
+## Data
+
+Workout data is stored in Supabase. The sync endpoint checks the current workout count.

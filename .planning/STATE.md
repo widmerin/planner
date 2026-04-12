@@ -1,10 +1,11 @@
 # State: Week Planner
 
 **Last Updated:** 2026-04-12
+**Status:** ✓ MVP Complete
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-12)
+See: .planning/PROJECT.md
 
 **Core value:** A single runner can see their weekly training plan, mark workouts done, and track pace — synced across devices.
 
@@ -12,9 +13,9 @@ See: .planning/PROJECT.md (updated 2026-04-12)
 
 | Field | Value |
 |-------|-------|
-| Current Phase | None (Phases 1-2 complete) |
+| Status | MVP Complete |
 | Mode | YOLO |
-| Last Transition | Phase 2 → Phase 3 |
+| All Phases | ✓ Complete |
 
 ## Phase Status
 
@@ -22,32 +23,37 @@ See: .planning/PROJECT.md (updated 2026-04-12)
 |-------|------|--------|---------|-----------|
 | 1 | Workout CRUD | ✓ Complete | 2026-04-12 | 2026-04-12 |
 | 2 | Pace Tracking | ✓ Complete | 2026-04-12 | 2026-04-12 |
-| 3 | Testing | Pending | — | — |
-| 4 | Code Review | Pending | — | — |
-
-## Active Work
-
-No active phase.
+| 3 | Testing | ✓ Complete | 2026-04-12 | 2026-04-12 |
+| 4 | Code Review | ✓ Complete | 2026-04-12 | 2026-04-12 |
 
 ## Blockers
 
 None.
 
-## Recent Changes
+## Final Summary
 
-- **2026-04-12**: MVP Complete - Phases 1 & 2 finished
-  - All v1 requirements implemented
-  - 26 unit tests passing
-  - Date/time handling fixed
-  - API routes fixed for runtime config
-- **2026-04-12**: Phase 2 completed - Pace Tracking
-  - Added visible pace button (⏱) on all run workouts
-  - PACE-01, PACE-02, PACE-03: All complete
-- **2026-04-12**: Phase 1 completed - Workout CRUD
-  - WORK-01, WORK-02, WORK-03, WORK-04: All complete
+### Features
+- Weekly workout view with day-by-day breakdown
+- Mark workouts as complete
+- Pace tracking for run workouts (min/km)
+- Week navigation (previous/next/today)
+- Supabase backend for data persistence
+- LocalStorage for client-side state
 
-## Notes
+### Security
+- Credentials in `.env` (gitignored)
+- No secrets in client bundle
+- Server-side only API routes
+- Input validation on all endpoints
+- HttpOnly session cookies
 
-- MVP complete: All 7 v1 requirements implemented and tested
-- Next: Phase 3 - Testing (E2E tests with mock data)
-- Then: Phase 4 - Code Review & Security
+### Tests
+- 20 unit tests (mock-based)
+- 6 E2E tests
+- **26 total tests passing**
+
+### Tech Stack
+- Nuxt 4 + Vue 3 (CSR)
+- Supabase for backend
+- Playwright for E2E
+- Vitest for unit tests

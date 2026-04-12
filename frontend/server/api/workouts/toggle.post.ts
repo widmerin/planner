@@ -3,13 +3,12 @@ import { createClient } from '@supabase/supabase-js'
 interface ToggleRequest {
   workoutId: string
   completed: boolean
-  date: string
+  date: string // YYYY-MM-DD
 }
 
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
-  const supabaseUrl = config.public.supabase.url?.trim()
-  const supabaseKey = config.public.supabase.key?.trim()
+  const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL?.trim()
+  const supabaseKey = process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
 
   if (!supabaseUrl || !supabaseKey) {
     throw createError({
@@ -32,6 +31,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     if (completed) {
+      // Mark as complete
       const { error } = await supabase
         .from('workout_completion')
         .upsert(
@@ -47,6 +47,7 @@ export default defineEventHandler(async (event) => {
         throw error
       }
     } else {
+      // Mark as incomplete
       const { error } = await supabase
         .from('workout_completion')
         .delete()
