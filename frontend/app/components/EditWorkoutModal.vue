@@ -112,8 +112,26 @@ watch(
   () => props.workout,
   (newWorkout) => {
     if (newWorkout) {
-      const startDate = newWorkout.start instanceof Date ? newWorkout.start : new Date(newWorkout.start as string)
-      const endDate = newWorkout.end ? (newWorkout.end instanceof Date ? newWorkout.end : new Date(newWorkout.end as string)) : null
+      let startDate: Date
+      if (newWorkout.start instanceof Date && !isNaN(newWorkout.start.getTime())) {
+        startDate = newWorkout.start
+      } else if (typeof newWorkout.start === 'string' && newWorkout.start) {
+        startDate = new Date(newWorkout.start)
+      } else {
+        startDate = new Date()
+      }
+      
+      let endDate: Date | null = null
+      if (newWorkout.end) {
+        if (newWorkout.end instanceof Date && !isNaN(newWorkout.end.getTime())) {
+          endDate = newWorkout.end
+        } else if (typeof newWorkout.end === 'string') {
+          const parsed = new Date(newWorkout.end)
+          if (!isNaN(parsed.getTime())) {
+            endDate = parsed
+          }
+        }
+      }
       
       draft.value = {
         summary: newWorkout.summary || '',
@@ -129,7 +147,10 @@ watch(
 
 const validationErrors = computed(() => validateWorkout(draft.value))
 
-const formatEditDate = (date: Date): string => {
+const formatEditDate = (date: Date | null | undefined): string => {
+  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+    return ''
+  }
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')

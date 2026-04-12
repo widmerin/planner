@@ -175,7 +175,10 @@ export const validateWorkout = (workout: Partial<Workout>): string[] => {
   return errors
 }
 
-export const formatTime = (date: Date): string => {
+export const formatTime = (date: Date | null | undefined): string => {
+  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+    return ''
+  }
   const hours = String(date.getHours()).padStart(2, '0')
   const minutes = String(date.getMinutes()).padStart(2, '0')
   return `${hours}:${minutes}`
