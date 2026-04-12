@@ -766,6 +766,20 @@ onMounted(async () => {
   opacity: 1;
 }
 
+@media (hover: none) {
+  .btn-edit,
+  .btn-delete {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .btn-edit,
+  .btn-delete {
+    opacity: 1;
+  }
+}
+
 .btn-edit:hover {
   color: var(--accent, #00d9a3);
   background: rgba(0, 217, 163, 0.1);
