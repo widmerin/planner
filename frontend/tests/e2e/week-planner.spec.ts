@@ -118,3 +118,47 @@ test('opens edit modal and updates workout', async ({ page }) => {
   await expect(modal).toBeHidden()
   await expect(runRow).toContainText('🏃 Updated Run')
 })
+
+test('creates a new workout with date and time', async ({ page }) => {
+  await login(page)
+  await expect(page.getByText('🏃 Leichter Run – W1').first()).toBeVisible()
+
+  // Click the add button
+  const addBtn = page.locator('button[aria-label="Add workout"]')
+  await addBtn.click()
+
+  // Wait for the modal to appear
+  const modal = page.locator('section[role="dialog"]')
+  await expect(modal).toBeVisible()
+  await expect(modal.locator('h2')).toContainText('New Workout')
+
+  // Fill in the summary
+  const summaryField = modal.locator('input[id="edit-summary"]')
+  await summaryField.fill('🏃 Test Run')
+
+  // Check that date field has a value
+  const dateField = modal.locator('input[id="edit-date"]')
+  const dateValue = await dateField.inputValue()
+  expect(dateValue).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  console.log('Date value:', dateValue)
+
+  // Check that time field has a value
+  const timeField = modal.locator('input[id="edit-start-time"]')
+  const timeValue = await timeField.inputValue()
+  expect(timeValue).toMatch(/^\d{2}:\d{2}$/)
+  console.log('Time value:', timeValue)
+
+  // Change the time
+  await timeField.fill('14:30')
+  await page.waitForTimeout(500)
+
+  // Verify date is still valid after time change
+  const dateValueAfter = await dateField.inputValue()
+  console.log('Date after time change:', dateValueAfter)
+  expect(dateValueAfter).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+
+  // Verify time was updated
+  const timeValueAfter = await timeField.inputValue()
+  console.log('Time after change:', timeValueAfter)
+  expect(timeValueAfter).toBe('14:30')
+})

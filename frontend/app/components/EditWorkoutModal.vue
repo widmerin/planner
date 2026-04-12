@@ -159,16 +159,26 @@ const formatEditDate = (date: Date | null | undefined): string => {
 
 const onDateChange = (e: Event) => {
   const input = e.target as HTMLInputElement
-  const [year, month, day] = input.value.split('-').map(Number)
+  const dateParts = input.value.split('-').map(Number)
+  if (dateParts.length !== 3 || dateParts.some(isNaN)) {
+    return
+  }
+  const [year, month, day] = dateParts
   
-  const currentStart = draft.value.start instanceof Date ? draft.value.start : new Date()
+  let currentStart = draft.value.start
+  if (!currentStart || !(currentStart instanceof Date) || isNaN(currentStart.getTime())) {
+    currentStart = new Date()
+  }
   const hours = currentStart.getHours()
   const minutes = currentStart.getMinutes()
   
   const newDate = new Date(year, month - 1, day, hours, minutes)
+  if (isNaN(newDate.getTime())) {
+    return
+  }
   draft.value.start = newDate
 
-  if (draft.value.end instanceof Date) {
+  if (draft.value.end instanceof Date && !isNaN(draft.value.end.getTime())) {
     const endDate = new Date(newDate)
     endDate.setHours(draft.value.end.getHours(), draft.value.end.getMinutes())
     draft.value.end = endDate
@@ -177,10 +187,21 @@ const onDateChange = (e: Event) => {
 
 const onStartTimeChange = (e: Event) => {
   const input = e.target as HTMLInputElement
-  const [hours, minutes] = input.value.split(':').map(Number)
+  const timeParts = input.value.split(':').map(Number)
+  if (timeParts.length !== 2 || timeParts.some(isNaN)) {
+    return
+  }
+  const [hours, minutes] = timeParts
   
-  const currentStart = draft.value.start instanceof Date ? draft.value.start : new Date()
+  let currentStart = draft.value.start
+  if (!currentStart || !(currentStart instanceof Date) || isNaN(currentStart.getTime())) {
+    currentStart = new Date()
+  }
+  
   const newStart = new Date(currentStart.getFullYear(), currentStart.getMonth(), currentStart.getDate(), hours, minutes)
+  if (isNaN(newStart.getTime())) {
+    return
+  }
   draft.value.start = newStart
 }
 
@@ -191,10 +212,21 @@ const onEndTimeChange = (e: Event) => {
     return
   }
 
-  const [hours, minutes] = input.value.split(':').map(Number)
+  const timeParts = input.value.split(':').map(Number)
+  if (timeParts.length !== 2 || timeParts.some(isNaN)) {
+    return
+  }
+  const [hours, minutes] = timeParts
   
-  const currentStart = draft.value.start instanceof Date ? draft.value.start : new Date()
+  let currentStart = draft.value.start
+  if (!currentStart || !(currentStart instanceof Date) || isNaN(currentStart.getTime())) {
+    currentStart = new Date()
+  }
+  
   const newEnd = new Date(currentStart.getFullYear(), currentStart.getMonth(), currentStart.getDate(), hours, minutes)
+  if (isNaN(newEnd.getTime())) {
+    return
+  }
   draft.value.end = newEnd
 }
 
