@@ -134,15 +134,18 @@ const formatEditDate = (date: Date): string => {
 
 const onDateChange = (e: Event) => {
   const input = e.target as HTMLInputElement
-  const [year, month, day] = input.value.split('-')
-  const newDate = new Date(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10))
-  newDate.setHours(draft.value.start!.getHours(), draft.value.start!.getMinutes())
+  const [year, month, day] = input.value.split('-').map(Number)
+  
+  const currentStart = draft.value.start instanceof Date ? draft.value.start : new Date()
+  const hours = currentStart.getHours()
+  const minutes = currentStart.getMinutes()
+  
+  const newDate = new Date(year, month - 1, day, hours, minutes)
   draft.value.start = newDate
 
-  if (draft.value.end) {
+  if (draft.value.end instanceof Date) {
     const endDate = new Date(newDate)
-    const duration = (draft.value.end as Date).getTime() - (props.workout?.start as Date).getTime()
-    endDate.setTime(endDate.getTime() + duration)
+    endDate.setHours(draft.value.end.getHours(), draft.value.end.getMinutes())
     draft.value.end = endDate
   }
 }
