@@ -17,6 +17,7 @@
             v-model="draft.summary"
             type="text"
             placeholder="e.g., 🏃 Easy Run"
+            required
           >
         </div>
 
@@ -31,6 +32,7 @@
             id="edit-date"
             :value="formatEditDate(draft.start)"
             type="date"
+            :min="formatEditDate(new Date())"
             @change="onDateChange"
           >
         </div>
@@ -40,7 +42,7 @@
             <label for="edit-start-time">Start Time *</label>
             <input
               id="edit-start-time"
-              :value="formatTime(draft.start)"
+              :value="draft.start ? formatTime(draft.start) : ''"
               type="time"
               @change="onStartTimeChange"
             >
@@ -66,7 +68,7 @@
 
         <div class="modal-actions">
           <button type="button" class="btn" :disabled="isSaving" @click="onCancel">Cancel</button>
-          <button type="button" class="btn btn-primary" :disabled="isSaving" @click="onSave">
+          <button type="submit" class="btn btn-primary" :disabled="isSaving || validationErrors.length > 0">
             {{ isSaving ? 'Saving...' : 'Save' }}
           </button>
         </div>
@@ -78,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 import { formatTime, validateWorkout, type Workout } from '~/lib/workouts'
 
 const props = withDefaults(
@@ -100,7 +102,7 @@ const emit = defineEmits<{
 const draft = ref<Partial<Workout>>({
   summary: '',
   description: '',
-  start: new Date(),
+  start: new Date(new Date().setHours(8, 0, 0, 0)),
   end: null,
   isAllDay: false,
 })
@@ -108,48 +110,23 @@ const draft = ref<Partial<Workout>>({
 const isSaving = ref(false)
 const saveError = ref('')
 
-watch(
-  () => props.workout,
-  (newWorkout) => {
-    if (newWorkout) {
-      let startDate: Date
-      if (newWorkout.start instanceof Date && !isNaN(newWorkout.start.getTime())) {
-        startDate = newWorkout.start
-      } else if (typeof newWorkout.start === 'string' && newWorkout.start) {
-        startDate = new Date(newWorkout.start)
-      } else {
-        startDate = new Date()
-      }
-      
-      let endDate: Date | null = null
-      if (newWorkout.end) {
-        if (newWorkout.end instanceof Date && !isNaN(newWorkout.end.getTime())) {
-          endDate = newWorkout.end
-        } else if (typeof newWorkout.end === 'string') {
-          const parsed = new Date(newWorkout.end)
-          if (!isNaN(parsed.getTime())) {
-            endDate = parsed
-          }
-        }
-      }
-      
-      draft.value = {
-        summary: newWorkout.summary || '',
-        description: newWorkout.description || '',
-        start: new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), startDate.getHours(), startDate.getMinutes()),
-        end: endDate ? new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), endDate.getHours(), endDate.getMinutes()) : null,
-        isAllDay: newWorkout.isAllDay || false,
-      }
+watchEffect(() => {
+  if (props.workout) {
+    draft.value = {
+      summary: props.workout.summary ?? '',
+      description: props.workout.description ?? '',
+      start: props.workout.start ? new Date(props.workout.start as Date) : new Date(),
+      end: props.workout.end ? new Date(props.workout.end as Date) : null,
+      isAllDay: props.workout.isAllDay ?? false,
     }
-  },
-  { immediate: true },
-)
+  }
+})
 
 const validationErrors = computed(() => validateWorkout(draft.value))
 
-const formatEditDate = (date: Date | null | undefined): string => {
-  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
-    return ''
+const formatEditDate = (date: Date | undefined | null): string => {
+  if (!date || isNaN(date.getTime())) {
+    return new Date().toISOString().split('T')[0]
   }
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -159,49 +136,30 @@ const formatEditDate = (date: Date | null | undefined): string => {
 
 const onDateChange = (e: Event) => {
   const input = e.target as HTMLInputElement
-  const dateParts = input.value.split('-').map(Number)
-  if (dateParts.length !== 3 || dateParts.some(isNaN)) {
-    return
-  }
-  const [year, month, day] = dateParts
+  const [year, month, day] = input.value.split('-')
+  const newDate = new Date(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10))
   
-  let currentStart = draft.value.start
-  if (!currentStart || !(currentStart instanceof Date) || isNaN(currentStart.getTime())) {
-    currentStart = new Date()
-  }
-  const hours = currentStart.getHours()
-  const minutes = currentStart.getMinutes()
-  
-  const newDate = new Date(year, month - 1, day, hours, minutes)
-  if (isNaN(newDate.getTime())) {
-    return
+  if (draft.value.start) {
+    newDate.setHours(draft.value.start.getHours(), draft.value.start.getMinutes())
   }
   draft.value.start = newDate
 
-  if (draft.value.end instanceof Date && !isNaN(draft.value.end.getTime())) {
+  if (draft.value.end) {
     const endDate = new Date(newDate)
-    endDate.setHours(draft.value.end.getHours(), draft.value.end.getMinutes())
+    const duration = (draft.value.end as Date).getTime() - (props.workout?.start as Date).getTime()
+    endDate.setTime(endDate.getTime() + duration)
     draft.value.end = endDate
   }
 }
 
 const onStartTimeChange = (e: Event) => {
   const input = e.target as HTMLInputElement
-  const timeParts = input.value.split(':').map(Number)
-  if (timeParts.length !== 2 || timeParts.some(isNaN)) {
-    return
+  const [hours, minutes] = input.value.split(':')
+  if (!draft.value.start) {
+    draft.value.start = new Date()
   }
-  const [hours, minutes] = timeParts
-  
-  let currentStart = draft.value.start
-  if (!currentStart || !(currentStart instanceof Date) || isNaN(currentStart.getTime())) {
-    currentStart = new Date()
-  }
-  
-  const newStart = new Date(currentStart.getFullYear(), currentStart.getMonth(), currentStart.getDate(), hours, minutes)
-  if (isNaN(newStart.getTime())) {
-    return
-  }
+  const newStart = new Date(draft.value.start)
+  newStart.setHours(parseInt(hours, 10), parseInt(minutes, 10))
   draft.value.start = newStart
 }
 
@@ -212,21 +170,12 @@ const onEndTimeChange = (e: Event) => {
     return
   }
 
-  const timeParts = input.value.split(':').map(Number)
-  if (timeParts.length !== 2 || timeParts.some(isNaN)) {
-    return
+  const [hours, minutes] = input.value.split(':')
+  if (!draft.value.start) {
+    draft.value.start = new Date()
   }
-  const [hours, minutes] = timeParts
-  
-  let currentStart = draft.value.start
-  if (!currentStart || !(currentStart instanceof Date) || isNaN(currentStart.getTime())) {
-    currentStart = new Date()
-  }
-  
-  const newEnd = new Date(currentStart.getFullYear(), currentStart.getMonth(), currentStart.getDate(), hours, minutes)
-  if (isNaN(newEnd.getTime())) {
-    return
-  }
+  const newEnd = new Date(draft.value.start)
+  newEnd.setHours(parseInt(hours, 10), parseInt(minutes, 10))
   draft.value.end = newEnd
 }
 
@@ -245,9 +194,8 @@ const onSave = async () => {
   isSaving.value = true
 
   try {
-    emit('save', { ...draft.value })
+    emit('save', draft.value)
   } catch (error) {
-    console.error('onSave error:', error)
     saveError.value = error instanceof Error ? error.message : 'Failed to save workout'
   } finally {
     isSaving.value = false

@@ -512,18 +512,27 @@ h1 {
 }
 
 .workout-item {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  gap: 0.5rem;
   padding: 0.52rem;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .check-row {
-  display: grid;
-  grid-template-columns: auto 1fr;
+  display: flex;
+  align-items: flex-start;
   gap: 0.55rem;
-  align-items: start;
+  min-width: 0;
+  flex: 1;
 }
 
 .check-row input {
@@ -535,7 +544,9 @@ h1 {
 }
 
 .workout-content {
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   gap: 0.08rem;
 }
 
@@ -577,6 +588,39 @@ h1 {
 .workout-title-row strong {
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.workout-actions {
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  gap: 0.15rem;
+  white-space: nowrap;
+}
+
+.workout-actions button {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.15rem 0.25rem;
+  border-radius: 4px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.workout-actions button:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-delete {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.workout-item:hover .btn-delete {
+  opacity: 1;
 }
 
 .pace-inline {

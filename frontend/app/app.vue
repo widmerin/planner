@@ -119,15 +119,6 @@
                 </span>
               </label>
               <div class="workout-actions">
-                <button
-                  v-if="canTrackPace(workout)"
-                  type="button"
-                  class="btn-pace"
-                  :aria-label="`${getPace(workout.id) ? 'Edit' : 'Add'} pace for ${workout.summary}`"
-                  @click="openPaceModal(workout.id)"
-                >
-                  ⏱
-                </button>
                 <button type="button" class="btn-delete" :aria-label="`Delete ${workout.summary}`" @click="confirmDelete(workout)">✕</button>
                 <button type="button" class="btn-edit" :aria-label="`Edit ${workout.summary}`" @click="openEditModal(workout)">✎</button>
               </div>
@@ -158,7 +149,7 @@
           aria-labelledby="pace-modal-title"
           @click.stop
         >
-          <h2 id="pace-modal-title">{{ getPace(activePaceWorkout?.id ?? '') ? 'Update pace' : 'Add pace' }}</h2>
+          <h2 id="pace-modal-title">Add pace</h2>
           <p class="pace-modal-summary">{{ activePaceWorkout.summary }}</p>
 
           <label for="pace-modal-input" class="pace-label">Pace (min/km)</label>
@@ -173,7 +164,7 @@
           >
 
           <div class="pace-modal-actions">
-            <button type="button" class="btn" @click="closePaceModal">Done</button>
+            <button type="button" class="btn" @click="closePaceModal">Skip</button>
             <button type="button" class="btn btn-primary" @click="savePaceFromModal">Save</button>
           </div>
         </section>
@@ -181,33 +172,11 @@
 
       <EditWorkoutModal
         :is-open="showEditModal"
-        :is-new="isCreatingWorkout"
+        :is-new="false"
         :workout="editingWorkout"
-        @save="onWorkoutSave"
+        @save="saveEditWorkout"
         @cancel="onEditCancel"
       />
-
-      <div
-        v-if="deletingWorkout"
-        class="modal-backdrop"
-        role="presentation"
-        @click="cancelDelete"
-      >
-        <section
-          class="delete-modal"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="delete-modal-title"
-          @click.stop
-        >
-          <h2 id="delete-modal-title">Delete Workout?</h2>
-          <p>Are you sure you want to delete "{{ deletingWorkout.summary }}"?</p>
-          <div class="delete-modal-actions">
-            <button type="button" class="btn" @click="cancelDelete">Cancel</button>
-            <button type="button" class="btn btn-danger" @click="executeDelete">Delete</button>
-          </div>
-        </section>
-      </div>
     </main>
   </div>
 </template>
@@ -221,7 +190,6 @@ import {
   formatTimeRange,
   getIsoWeekDays,
   normalizeWorkout,
-  parseWorkoutsFromICS,
   startOfIsoWeek,
   toDayKey,
   workoutsByDayForWeek,
@@ -242,9 +210,6 @@ const touchStartX = ref<number | null>(null)
 const touchStartY = ref<number | null>(null)
 const showEditModal = ref(false)
 const editingWorkout = ref<Partial<Workout> | null>(null)
-const isCreatingWorkout = ref(false)
-const deletingWorkout = ref<Workout | null>(null)
-const isDeleting = ref(false)
 
 const weekStart = computed(() => startOfIsoWeek(anchorDate.value))
 const weekDays = computed(() => getIsoWeekDays(weekStart.value))
@@ -525,103 +490,67 @@ const exportWorkoutsAsJson = () => {
 
 const openEditModal = (workout: Workout) => {
   editingWorkout.value = { ...workout }
-  isCreatingWorkout.value = false
   showEditModal.value = true
 }
 
-const openNewWorkoutModal = () => {
-  const defaultDate = new Date(weekStart.value)
-  defaultDate.setHours(9, 0, 0, 0)
-  editingWorkout.value = {
-    summary: '',
-    description: '',
-    start: defaultDate,
-    end: null,
-    isAllDay: false,
-  }
-  isCreatingWorkout.value = true
-  showEditModal.value = true
-}
-
-const onWorkoutSave = async (draft: Partial<Workout>) => {
-  if (isCreatingWorkout.value) {
-    await createWorkout(draft)
-  } else {
-    await updateWorkout(draft)
-  }
-}
-
-const createWorkout = async (draft: Partial<Workout>) => {
-  try {
-    const response = await fetch('/api/workouts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        summary: draft.summary,
-        description: draft.description,
-        start: draft.start instanceof Date ? draft.start.toISOString() : draft.start,
-        end: draft.end instanceof Date ? draft.end.toISOString() : draft.end,
-        isAllDay: draft.isAllDay,
-      }),
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.statusMessage || `Create failed: ${response.status}`)
-    }
-
-    const data = await response.json()
-    const normalized = normalizeWorkout(data.workout)
-
-    workouts.value = [...workouts.value, normalized].sort(
-      (a, b) => a.start.getTime() - b.start.getTime()
-    )
-
-    showEditModal.value = false
-    editingWorkout.value = null
-    isCreatingWorkout.value = false
-  } catch (error) {
-    console.error('Error creating workout:', error)
-    throw error
-  }
-}
-
-const updateWorkout = async (draft: Partial<Workout>) => {
-  if (!editingWorkout.value?.id) {
-    console.error('No workout ID to update')
-    return
-  }
+const saveEditWorkout = async (draft: Partial<Workout>) => {
+  const isNew = !editingWorkout.value?.id
 
   try {
-    const response = await fetch(`/api/workouts/${editingWorkout.value.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        summary: draft.summary,
-        description: draft.description,
-        start_date: draft.start instanceof Date ? draft.start.toISOString() : draft.start,
-        end_date: draft.end instanceof Date ? draft.end.toISOString() : draft.end,
-        is_all_day: draft.isAllDay,
-      }),
-    })
+    let normalized: Workout
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.statusMessage || `Update failed: ${response.status}`)
-    }
+    if (isNew) {
+      const response = await fetch('/api/workouts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          summary: draft.summary,
+          description: draft.description,
+          start: draft.start instanceof Date ? draft.start.toISOString() : draft.start,
+          end: draft.end instanceof Date ? draft.end.toISOString() : draft.end,
+          isAllDay: draft.isAllDay,
+        }),
+      })
 
-    const updatedWorkout = await response.json()
-    const normalized = normalizeWorkout(updatedWorkout.workout)
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || `Create failed: ${response.status}`)
+      }
 
-    const index = workouts.value.findIndex((w) => w.id === normalized.id)
-    if (index >= 0) {
-      workouts.value[index] = normalized
+      const data = await response.json()
+      normalized = normalizeWorkout(data.workout)
+      workouts.value.push(normalized)
+    } else {
+      const response = await fetch(`/api/workouts/${editingWorkout.value.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          summary: draft.summary,
+          description: draft.description,
+          start: draft.start instanceof Date ? draft.start.toISOString() : draft.start,
+          end: draft.end instanceof Date ? draft.end.toISOString() : draft.end,
+          isAllDay: draft.isAllDay,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || `Update failed: ${response.status}`)
+      }
+
+      const data = await response.json()
+      normalized = normalizeWorkout(data.workout)
+
+      const index = workouts.value.findIndex((w) => w.id === normalized.id)
+      if (index >= 0) {
+        workouts.value[index] = normalized
+      }
     }
 
     showEditModal.value = false
     editingWorkout.value = null
   } catch (error) {
-    console.error('Error updating workout:', error)
+    console.error('Error saving workout:', error)
     throw error
   }
 }
@@ -629,42 +558,39 @@ const updateWorkout = async (draft: Partial<Workout>) => {
 const onEditCancel = () => {
   showEditModal.value = false
   editingWorkout.value = null
-  isCreatingWorkout.value = false
+}
+
+const openNewWorkoutModal = () => {
+  editingWorkout.value = {
+    summary: '',
+    description: '',
+    start: new Date(),
+    end: null,
+    isAllDay: false,
+  }
+  showEditModal.value = true
 }
 
 const confirmDelete = (workout: Workout) => {
-  deletingWorkout.value = workout
-}
-
-const cancelDelete = () => {
-  deletingWorkout.value = null
-}
-
-const executeDelete = async () => {
-  if (!deletingWorkout.value) {
-    return
+  if (confirm(`Delete "${workout.summary}"?`)) {
+    deleteWorkout(workout.id)
   }
+}
 
-  isDeleting.value = true
-  const workoutId = deletingWorkout.value.id
-
+const deleteWorkout = async (id: string) => {
   try {
-    const response = await fetch(`/api/workouts/${workoutId}`, {
+    const response = await fetch(`/api/workouts/${id}`, {
       method: 'DELETE',
     })
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.statusMessage || `Delete failed: ${response.status}`)
+      throw new Error(`Delete failed: ${response.status}`)
     }
 
-    workouts.value = workouts.value.filter((w) => w.id !== workoutId)
-    deletingWorkout.value = null
+    workouts.value = workouts.value.filter((w) => w.id !== id)
   } catch (error) {
     console.error('Error deleting workout:', error)
-    throw error
-  } finally {
-    isDeleting.value = false
+    alert('Failed to delete workout')
   }
 }
 
@@ -822,159 +748,32 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.btn-add {
-  background: #00d9a3;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 2.5rem;
-  height: 2.5rem;
-  font-size: 1.5rem;
-  font-weight: 300;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s, transform 0.1s;
-  padding: 0;
-  line-height: 1;
-}
-
-.btn-add:hover {
-  background: #00c691;
-  transform: scale(1.05);
-}
-
-.btn-add:active {
-  transform: scale(0.95);
-}
-
-.btn-add:focus {
-  outline: 2px solid #00d9a3;
-  outline-offset: 2px;
-}
-
-.workout-actions {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  display: flex;
-  gap: 0.25rem;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.workout-item:hover .workout-actions {
-  opacity: 1;
-}
-
-.btn-pace {
-  background: transparent;
-  border: none;
-  font-size: 1rem;
-  cursor: pointer;
-  padding: 0.25rem 0.4rem;
-  color: #666;
-  border-radius: 4px;
-  min-width: 2rem;
-  min-height: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.2s, color 0.2s, background 0.2s;
-  opacity: 1;
-}
-
-.btn-pace:hover {
-  color: #00d9a3;
-  background: rgba(0, 217, 163, 0.1);
-}
-
-.btn-pace:focus {
-  outline: 2px solid #00d9a3;
-  outline-offset: 2px;
-}
-
-.btn-pace.has-pace {
-  color: #00d9a3;
-}
-
 .btn-edit,
 .btn-delete {
   background: transparent;
   border: none;
   font-size: 1rem;
   cursor: pointer;
-  padding: 0.25rem 0.4rem;
-  color: #666;
+  padding: 0.2rem 0.4rem;
+  color: var(--text-dim, #666);
+  opacity: 0;
+  transition: opacity 0.2s, color 0.2s;
   border-radius: 4px;
-  min-width: 2rem;
-  min-height: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.2s, color 0.2s, background 0.2s;
+}
+
+.workout-item:hover .btn-edit,
+.workout-item:hover .btn-delete {
+  opacity: 1;
 }
 
 .btn-edit:hover {
-  color: #00d9a3;
+  color: var(--accent, #00d9a3);
   background: rgba(0, 217, 163, 0.1);
 }
 
-.btn-edit:focus {
-  outline: 2px solid #00d9a3;
-  outline-offset: 2px;
-}
-
 .btn-delete:hover {
-  color: #e74c3c;
-  background: rgba(231, 76, 60, 0.1);
-}
-
-.btn-delete:focus {
-  outline: 2px solid #e74c3c;
-  outline-offset: 2px;
-}
-
-.workout-item {
-  position: relative;
-}
-
-.delete-modal {
-  background: white;
-  border-radius: 12px;
-  padding: 2rem;
-  max-width: 400px;
-  width: 100%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
-.delete-modal h2 {
-  margin: 0 0 1rem 0;
-  font-size: 1.25rem;
-  color: #1a1a1a;
-}
-
-.delete-modal p {
-  margin: 0 0 1.5rem 0;
-  color: #666;
-}
-
-.delete-modal-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-}
-
-.btn-danger {
-  background: #e74c3c;
-  color: white;
-  border-color: #e74c3c;
-}
-
-.btn-danger:hover:not(:disabled) {
-  background: #c0392b;
-  border-color: #c0392b;
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
 }
 </style>
 
