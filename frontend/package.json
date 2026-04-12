@@ -13,6 +13,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.103.0",
     "@vueuse/core": "^14.2.1",
     "ical.js": "^2.2.1",
     "nuxt": "^4.4.2",

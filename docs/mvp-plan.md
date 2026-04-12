@@ -10,21 +10,26 @@ Build a mobile-first weekly running planner as a Nuxt client-rendered app in `fr
 ### In-scope MVP features
 - Weekly overview (Monday to Sunday) of planned workouts
 - Mark workouts as done
-- Persist done state in browser localStorage
+- Persist done state to Supabase database
+- Track pace (min/km) for running workouts with database persistence
 - Reliable parsing of ICS events (including all-day and multi-day entries)
 - Automated tests (unit + mobile E2E)
 
 ### Out-of-scope for MVP
 - User management / multi-user accounts
-- Database/backend persistence
 - Calendar editing or ICS upload UI
+- Multiple user profiles
 
 ## 2) Technical decisions
 
 - Framework: Nuxt (Vue 3), client-rendered (`ssr: false`)
-- Data source: static ICS file in `frontend/public/data/trainingsplan_v2.ics`
+- Data source: 
+  - Static ICS file in `frontend/public/data/trainingsplan_v2.ics`
+  - Supabase PostgreSQL for persistent workout metadata (done state, pace)
+- Backend: Nitro API routes (built into Nuxt)
 - ICS parser: `ical.js`
-- Local persistence: `@vueuse/core` `useStorage` with stable keys
+- Local persistence: `@vueuse/core` `useStorage` with stable keys (synced to Supabase)
+- Database: Supabase (PostgreSQL with Row Level Security)
 - Unit tests: Vitest
 - Integration tests: Playwright (mobile Chromium profile)
 - Keep architecture simple: one main page + small utility modules
@@ -137,14 +142,61 @@ Implement the weekly planner screen in `app/app.vue`:
 
 Persistence:
 - Store done state in localStorage with `useStorage` key `weekplanner-done-v1`
-- Data shape: `Record<string, boolean>` by workout id
+- Store pace in localStorage with `useStorage` key `weekplanner-pace-v1`
+- Data shapes: 
+  - `Record<string, boolean>` by workout id for done state
+  - `Record<string, string>` by workout id for pace (e.g., "6:05" for 6m5s/km)
+- Both are synced to Supabase `workout_completion` table with RLS policies
 
 Recommended quality details:
 - Loading and error states while reading ICS
 - Time formatting helper (`formatTimeRange`)
 - Basic progress indicator (done vs total)
+- Pace modal for capturing min/km on completion
 
-## 8) Optional auth gate (current implementation)
+## 8) Database schema (Supabase)
+
+Two tables with RLS enabled for MVP:
+
+**workouts table:**
+```sql
+id uuid primary key
+uid text unique not null
+summary text not null
+description text
+start_date timestamp not null
+end_date timestamp
+is_all_day boolean
+created_at timestamp default now()
+```
+
+**workout_completion table:**
+```sql
+id uuid primary key
+workout_id uuid references workouts(id)
+completed_date date not null
+completed_at timestamp default now()
+pace text  -- stores pace as "m:ss" format
+unique(workout_id, completed_date)
+```
+
+Required RLS policies (allow anonymous access for MVP):
+- workouts: SELECT, INSERT, UPDATE for all
+- workout_completion: SELECT, INSERT, UPDATE, DELETE for all
+
+## 9) Backend API routes (Nitro)
+
+Implement in `server/api/workouts/`:
+
+- `GET /api/workouts` - fetch all workouts
+- `POST /api/workouts/sync` - sync ICS file to database
+- `GET /api/workouts/completions` - fetch completion records + paces
+- `POST /api/workouts/toggle` - mark workout done/undone
+- `POST /api/workouts/pace` - save pace for completed workout
+
+All routes use Supabase client with anon key from `.env.local`
+
+## 10) Optional auth gate (current implementation)
 
 MVP does not require user management. Keep auth only if you need a simple shared login screen.
 
@@ -166,7 +218,7 @@ cp .env.example .env.local  # if example exists
 
 If auth is removed, also simplify E2E tests accordingly.
 
-## 9) Test strategy and success criteria
+## 11) Test strategy and success criteria
 
 ### Unit tests (`tests/workouts.test.ts`)
 
@@ -174,19 +226,29 @@ Must verify:
 - ICS parsing returns expected volume and stable ids
 - ISO week grouping Monday-Sunday is correct
 - Multi-day all-day events expand to all covered days
+- `normalizeWorkout()` converts string dates to Date objects (JSON serialization fix)
+
+### API tests (`tests/api-routes.test.ts`)
+
+Must verify (requires dev server running):
+- GET /api/workouts returns correct format
+- GET /api/workouts/completions returns completions and paces
+- POST /api/workouts/sync processes ICS file
+- POST /api/workouts/toggle marks workouts done/undone
+- POST /api/workouts/pace saves pace data
 
 ### E2E tests (`tests/e2e/week-planner.spec.ts`)
 
 Must verify on mobile viewport:
 - Planner page is visible and workouts render
 - User can mark workout done
-- Done state persists after reload
+- Done state persists after reload (via Supabase)
+- Pace modal normalizes input formats (6.40 → 6:40)
+- Saved pace displays inline (· 6:40 min/km)
+- Pace persists after reload (loaded from Supabase)
+- Modal only opens for run workouts (not yoga/bike)
 
-If pace tracking modal is present, also verify:
-- Modal opens only for run workouts
-- Saved pace value is normalized and displayed
-
-## 10) Commands for implementation and verification
+## 12) Commands for implementation and verification
 
 From `frontend`:
 

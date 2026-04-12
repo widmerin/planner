@@ -4,6 +4,14 @@ export default defineNuxtConfig({
   ssr: false,
   devtools: { enabled: true },
   css: ['~/assets/main.css'],
+  runtimeConfig: {
+    public: {
+      supabase: {
+        url: process.env.NUXT_PUBLIC_SUPABASE_URL || '',
+        key: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || '',
+      },
+    },
+  },
   app: {
     head: {
       title: 'Planner',

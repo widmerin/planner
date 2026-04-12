@@ -117,6 +117,7 @@
 
                 </span>
               </label>
+              <button type="button" class="btn-edit" :aria-label="`Edit ${workout.summary}`" @click="openEditModal(workout)">✎</button>
             </li>
           </ul>
 
@@ -164,6 +165,14 @@
           </div>
         </section>
       </div>
+
+      <EditWorkoutModal
+        :is-open="showEditModal"
+        :is-new="false"
+        :workout="editingWorkout"
+        @save="saveEditWorkout"
+        @cancel="onEditCancel"
+      />
     </main>
   </div>
 </template>
@@ -172,9 +181,11 @@
 import { computed, onMounted, ref } from 'vue'
 import { useStorage } from '@vueuse/core'
 import LoginScreen from '~/components/LoginScreen.vue'
+import EditWorkoutModal from '~/components/EditWorkoutModal.vue'
 import {
   formatTimeRange,
   getIsoWeekDays,
+  normalizeWorkout,
   parseWorkoutsFromICS,
   startOfIsoWeek,
   toDayKey,
@@ -194,6 +205,8 @@ const activePaceWorkoutId = ref<string | null>(null)
 const paceDraft = ref('')
 const touchStartX = ref<number | null>(null)
 const touchStartY = ref<number | null>(null)
+const showEditModal = ref(false)
+const editingWorkout = ref<Partial<Workout> | null>(null)
 
 const weekStart = computed(() => startOfIsoWeek(anchorDate.value))
 const weekDays = computed(() => getIsoWeekDays(weekStart.value))
@@ -344,12 +357,36 @@ const setPace = (id: string, pace: string) => {
   if (!value) {
     const { [id]: _, ...rest } = paceState.value
     paceState.value = rest
-    return
+  } else {
+    paceState.value = {
+      ...paceState.value,
+      [id]: value,
+    }
   }
 
-  paceState.value = {
-    ...paceState.value,
-    [id]: value,
+  // Sync to Supabase
+  const workout = workouts.value.find((w) => w.id === id)
+  if (workout) {
+    const dateStr = toDayKey(workout.start)
+    syncPaceToSupabase(id, value, dateStr).catch((error) => {
+      console.warn('Could not sync pace to Supabase:', error)
+    })
+  }
+}
+
+const syncPaceToSupabase = async (workoutId: string, pace: string, date: string) => {
+  try {
+    const response = await fetch('/api/workouts/pace', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ workoutId, pace, date }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to sync pace: ${response.status}`)
+    }
+  } catch (error) {
+    console.warn('Error syncing pace:', error)
   }
 }
 
@@ -362,6 +399,31 @@ const setDone = (id: string, done: boolean) => {
   doneState.value = {
     ...doneState.value,
     [id]: done,
+  }
+
+  // Sync to Supabase
+  const workout = workouts.value.find((w) => w.id === id)
+  if (workout) {
+    const dateStr = toDayKey(workout.start)
+    syncCompletionToSupabase(id, done, dateStr).catch((error) => {
+      console.warn('Could not sync completion to Supabase:', error)
+    })
+  }
+}
+
+const syncCompletionToSupabase = async (workoutId: string, completed: boolean, date: string) => {
+  try {
+    const response = await fetch('/api/workouts/toggle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ workoutId, completed, date }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to sync: ${response.status}`)
+    }
+  } catch (error) {
+    console.warn('Error syncing completion:', error)
   }
 }
 
@@ -423,6 +485,58 @@ const exportWorkoutsAsJson = () => {
   URL.revokeObjectURL(url)
 }
 
+const openEditModal = (workout: Workout) => {
+  editingWorkout.value = { ...workout }
+  showEditModal.value = true
+}
+
+const saveEditWorkout = async (draft: Partial<Workout>) => {
+  if (!editingWorkout.value?.id) {
+    console.error('No workout ID to update')
+    return
+  }
+
+  try {
+    const response = await fetch(`/api/workouts/${editingWorkout.value.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        summary: draft.summary,
+        description: draft.description,
+        start: draft.start instanceof Date ? draft.start.toISOString() : draft.start,
+        end: draft.end instanceof Date ? draft.end.toISOString() : draft.end,
+        isAllDay: draft.isAllDay,
+      }),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.message || `Update failed: ${response.status}`)
+    }
+
+    const updatedWorkout = await response.json()
+    const normalized = normalizeWorkout(updatedWorkout.data)
+
+    // Update the workout in the list
+    const index = workouts.value.findIndex((w) => w.id === normalized.id)
+    if (index >= 0) {
+      workouts.value[index] = normalized
+    }
+
+    // Close the modal
+    showEditModal.value = false
+    editingWorkout.value = null
+  } catch (error) {
+    console.error('Error saving workout:', error)
+    throw error
+  }
+}
+
+const onEditCancel = () => {
+  showEditModal.value = false
+  editingWorkout.value = null
+}
+
 const goToPreviousWeek = () => {
   const nextDate = new Date(anchorDate.value)
   nextDate.setDate(nextDate.getDate() - 7)
@@ -440,7 +554,7 @@ const goToCurrentWeek = () => {
 }
 
 const onTouchStart = (event: TouchEvent) => {
-  if (activePaceWorkout.value) {
+  if (activePaceWorkout.value || showEditModal.value) {
     return
   }
 
@@ -454,7 +568,7 @@ const onTouchStart = (event: TouchEvent) => {
 }
 
 const onTouchEnd = (event: TouchEvent) => {
-  if (activePaceWorkout.value) {
+  if (activePaceWorkout.value || showEditModal.value) {
     return
   }
 
@@ -495,19 +609,64 @@ const handleLogout = () => {
 
 const loadWorkouts = async () => {
   try {
-    const response = await fetch('/data/trainingsplan_v2.ics')
+    // Fetch workouts from Supabase
+    const response = await fetch('/api/workouts')
     if (!response.ok) {
-      throw new Error(`Could not load calendar: ${response.status}`)
+      const errorData = await response.json().catch(() => ({}))
+      const message = errorData.statusMessage || `HTTP ${response.status}`
+      throw new Error(`Could not load workouts: ${message}`)
     }
 
-    const icsText = await response.text()
-    workouts.value = parseWorkoutsFromICS(icsText)
+    const data = await response.json()
+    if (!data.workouts || data.workouts.length === 0) {
+      console.warn('No workouts in database yet. Trying to sync from ICS...')
+    }
+    workouts.value = data.workouts.map(normalizeWorkout)
+
+    // Load completions from Supabase
+    const completionsResponse = await fetch('/api/workouts/completions')
+    if (completionsResponse.ok) {
+      const completionsData = await completionsResponse.json()
+      // Sync completions to local state
+      for (const [date, workoutIds] of Object.entries(completionsData.completions)) {
+        for (const workoutId of workoutIds as string[]) {
+          doneState.value[workoutId] = true
+        }
+      }
+      // Load pace data from Supabase
+      if (completionsData.paces) {
+        paceState.value = {
+          ...paceState.value,
+          ...completionsData.paces,
+        }
+      }
+    }
   }
-  catch {
-    loadError.value = 'Could not load the workout plan.'
+  catch (error) {
+    console.error('Error loading workouts:', error)
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+    loadError.value = `Unable to load workouts: ${errorMsg}`
   }
   finally {
     isLoading.value = false
+  }
+}
+
+const syncWorkoutsToSupabase = async () => {
+  try {
+    const response = await fetch('/api/workouts/sync', { method: 'POST' })
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      console.warn('Sync failed:', errorData.statusMessage || response.status)
+      return false
+    }
+    const data = await response.json()
+    console.log(`✓ Synced ${data.synced} workouts from ICS`)
+    return true
+  }
+  catch (error) {
+    console.warn('Error syncing workouts:', error)
+    return false
   }
 }
 
@@ -523,8 +682,51 @@ onMounted(async () => {
 
   if (await isAuthenticated()) {
     isLoggedIn.value = true
+    // Sync workouts from ICS to Supabase on first load
+    await syncWorkoutsToSupabase()
+    // Then load all workouts and completions
     loadWorkouts()
   }
 })
 </script>
+
+<style scoped>
+.btn-edit {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  color: #666;
+  opacity: 0;
+  transition: opacity 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  min-width: 2rem;
+  min-height: 2rem;
+}
+
+.workout-item:hover .btn-edit {
+  opacity: 1;
+}
+
+.btn-edit:hover {
+  color: #00d9a3;
+  background: rgba(0, 217, 163, 0.1);
+}
+
+.btn-edit:focus {
+  outline: 2px solid #00d9a3;
+  outline-offset: 2px;
+}
+
+.workout-item {
+  position: relative;
+}
+</style>
 

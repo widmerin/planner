@@ -1,75 +1,30 @@
-# Nuxt Minimal Starter
+# Week Planner Frontend
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Nuxt 4 app for the week planner. See [../README.md](../README.md) for complete setup and documentation.
 
-## Setup
-
-Make sure to install dependencies:
+## Quick Start
 
 ```bash
-# npm
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
 npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+## Scripts
 
-Build the application for production:
+- `npm run dev` — Start dev server on port 3000
+- `npm run build` — Build for production
+- `npm test` — Run unit tests
+- `npm run test:coverage` — Unit tests with coverage report
+- `npm run test:e2e` — Run E2E tests with Playwright
+- `npm run test:e2e -- --headed` — E2E with visible browser
+- `npm run lint` — Run ESLint
 
-```bash
-# npm
-npm run build
+## Architecture
 
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+- `app/app.vue` — Main planner component
+- `app/lib/workouts.ts` — ICS parsing and date utilities
+- `app/composables/useSupabase.ts` — Supabase client setup
+- `app/components/LoginScreen.vue` — Auth gate
+- `server/api/workouts/*.ts` — Backend API endpoints
+- `tests/` — Unit and E2E tests
+- `public/data/trainingsplan_v2.ics` — Calendar data
