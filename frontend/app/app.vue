@@ -119,6 +119,15 @@
                 </span>
               </label>
               <div class="workout-actions">
+                <button
+                  v-if="canTrackPace(workout)"
+                  type="button"
+                  class="btn-pace"
+                  :aria-label="`${getPace(workout.id) ? 'Edit' : 'Add'} pace for ${workout.summary}`"
+                  @click="openPaceModal(workout.id)"
+                >
+                  ⏱
+                </button>
                 <button type="button" class="btn-delete" :aria-label="`Delete ${workout.summary}`" @click="confirmDelete(workout)">✕</button>
                 <button type="button" class="btn-edit" :aria-label="`Edit ${workout.summary}`" @click="openEditModal(workout)">✎</button>
               </div>
@@ -149,7 +158,7 @@
           aria-labelledby="pace-modal-title"
           @click.stop
         >
-          <h2 id="pace-modal-title">Add pace</h2>
+          <h2 id="pace-modal-title">{{ getPace(activePaceWorkout?.id ?? '') ? 'Update pace' : 'Add pace' }}</h2>
           <p class="pace-modal-summary">{{ activePaceWorkout.summary }}</p>
 
           <label for="pace-modal-input" class="pace-label">Pace (min/km)</label>
@@ -164,7 +173,7 @@
           >
 
           <div class="pace-modal-actions">
-            <button type="button" class="btn" @click="closePaceModal">Skip</button>
+            <button type="button" class="btn" @click="closePaceModal">Done</button>
             <button type="button" class="btn btn-primary" @click="savePaceFromModal">Save</button>
           </div>
         </section>
@@ -856,6 +865,37 @@ onMounted(async () => {
 
 .workout-item:hover .workout-actions {
   opacity: 1;
+}
+
+.btn-pace {
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.25rem 0.4rem;
+  color: #666;
+  border-radius: 4px;
+  min-width: 2rem;
+  min-height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s, color 0.2s, background 0.2s;
+  opacity: 1;
+}
+
+.btn-pace:hover {
+  color: #00d9a3;
+  background: rgba(0, 217, 163, 0.1);
+}
+
+.btn-pace:focus {
+  outline: 2px solid #00d9a3;
+  outline-offset: 2px;
+}
+
+.btn-pace.has-pace {
+  color: #00d9a3;
 }
 
 .btn-edit,

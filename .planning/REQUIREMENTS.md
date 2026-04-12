@@ -14,9 +14,9 @@
 
 ### Pace Tracking
 
-- [ ] **PACE-01**: User sees "Add pace" button on all run workouts (not yoga/bike)
-- [ ] **PACE-02**: User can add or update pace (min/km) for any completed run workout
-- [ ] **PACE-03**: Pace data syncs to Supabase and persists
+- [x] **PACE-01**: User sees "Add pace" button on all run workouts (not yoga/bike)
+- [x] **PACE-02**: User can add or update pace (min/km) for any completed run workout
+- [x] **PACE-03**: Pace data syncs to Supabase and persists
 
 ### Sync & Offline
 
@@ -55,9 +55,9 @@
 | WORK-02 | Phase 1 | Complete |
 | WORK-03 | Phase 1 | Complete |
 | WORK-04 | Phase 1 | Complete |
-| PACE-01 | Phase 2 | Pending |
-| PACE-02 | Phase 2 | Pending |
-| PACE-03 | Phase 2 | Pending |
+| PACE-01 | Phase 2 | Complete |
+| PACE-02 | Phase 2 | Complete |
+| PACE-03 | Phase 2 | Complete |
 | SYNC-01 | Phase 3 | Pending |
 | SYNC-02 | Phase 3 | Pending |
 | SYNC-03 | Phase 3 | Pending |
@@ -69,4 +69,4 @@
 
 ---
 *Requirements defined: 2026-04-12*
-*Last updated: 2026-04-12 after Phase 1 completion*
+*Last updated: 2026-04-12 after Phase 2 completion*

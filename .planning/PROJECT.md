@@ -24,10 +24,10 @@ A single runner can see their weekly training plan, mark workouts done, and trac
 - ✓ Login screen with session management — shipped
 - ✓ Create new workout manually — Phase 1
 - ✓ Delete unwanted workouts — Phase 1
+- ✓ Improve pace tracking UI visibility — Phase 2
 
 ### Active
 
-- [ ] Improve pace tracking UI visibility
 - [ ] Offline queue for failed syncs
 
 ### Out of Scope
@@ -92,4 +92,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-12 after Phase 1 completion*
+*Last updated: 2026-04-12 after Phase 2 completion*
