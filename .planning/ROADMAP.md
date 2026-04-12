@@ -1,7 +1,7 @@
 # Roadmap: Week Planner
 
 **Created:** 2026-04-12
-**Phases:** 4 | **Requirements:** 10 | **All v1 requirements covered** ✓
+**Phases:** 5 | **Requirements:** 10 | **All v1 requirements covered** ✓
 
 ## Phase Summary
 
@@ -9,8 +9,9 @@
 |---|-------|------|--------|
 | 1 | Workout CRUD | Full create/delete/edit for workouts | ✓ Complete |
 | 2 | Pace Tracking | Make pace tracking visible and accessible | ✓ Complete |
-| 3 | Testing | E2E tests with mock data | Pending |
-| 4 | Code Review | Security audit & simplification | Pending |
+| 3 | Testing | E2E tests with mock data | ✓ Complete |
+| 4 | Code Review | Security audit & simplification | ✓ Complete |
+| 5 | Gap Closure | Close verification gaps | In Progress |
 
 ---
 
@@ -113,5 +114,22 @@
 
 ---
 
+## Phase 5: Gap Closure
+
+**Status:** In Progress
+
+### Success Criteria
+1. ✓ Add trainingsplan_v2.ics file to frontend/public/data/
+2. ✓ Expand E2E tests for CRUD operations (create, edit, delete)
+3. ✓ Expand E2E tests for pace modal flow (save/skip actions)
+4. Tests use mock data without external dependencies
+
+### Gap Closure Items
+- Missing ICS data file
+- E2E test coverage gaps for CRUD via UI
+- E2E test coverage gaps for pace modal interactions
+
+---
+
 *Roadmap created: 2026-04-12*
-*Last updated: 2026-04-12 after Phase 1 & 2 completion*
+*Last updated: 2026-04-12 after Phase 5 gap closure*
