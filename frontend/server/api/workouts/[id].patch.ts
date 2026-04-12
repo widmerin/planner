@@ -79,7 +79,6 @@ export default defineEventHandler(async (event) => {
     // Update workout
     const updateData: any = {
       updated_at: new Date().toISOString(),
-      edited_by_user: true,
     }
 
     if (summary) updateData.summary = summary
@@ -119,7 +118,6 @@ export default defineEventHandler(async (event) => {
       end: updatedWorkout.end_date ? new Date(updatedWorkout.end_date) : null,
       isAllDay: updatedWorkout.is_all_day,
       source: updatedWorkout.source,
-      edited_by_user: updatedWorkout.edited_by_user,
       created_at: updatedWorkout.created_at,
       updated_at: updatedWorkout.updated_at,
     }

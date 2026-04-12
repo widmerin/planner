@@ -88,7 +88,6 @@ export default defineEventHandler(async (event) => {
       end_date: body.end ? new Date(body.end).toISOString() : null,
       is_all_day: body.isAllDay ?? false,
       source: 'user-created',
-      edited_by_user: true,
     })
     .select()
     .single()
@@ -110,7 +109,6 @@ export default defineEventHandler(async (event) => {
     end: data.end_date ? new Date(data.end_date) : null,
     isAllDay: data.is_all_day,
     source: data.source,
-    edited_by_user: data.edited_by_user,
   }
 
   return {
