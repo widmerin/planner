@@ -7,10 +7,10 @@
 
 ### Workouts
 
-- [ ] **WORK-01**: User can create a new workout with summary, description, date, and time
-- [ ] **WORK-02**: User can delete an unwanted workout with confirmation
-- [ ] **WORK-03**: User can edit existing workout details (summary, description, time)
-- [ ] **WORK-04**: New workouts persist to Supabase and survive page reload
+- [x] **WORK-01**: User can create a new workout with summary, description, date, and time
+- [x] **WORK-02**: User can delete an unwanted workout with confirmation
+- [x] **WORK-03**: User can edit existing workout details (summary, description, time)
+- [x] **WORK-04**: New workouts persist to Supabase and survive page reload
 
 ### Pace Tracking
 
@@ -51,10 +51,10 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| WORK-01 | Phase 1 | Pending |
-| WORK-02 | Phase 1 | Pending |
-| WORK-03 | Phase 1 | Pending |
-| WORK-04 | Phase 1 | Pending |
+| WORK-01 | Phase 1 | Complete |
+| WORK-02 | Phase 1 | Complete |
+| WORK-03 | Phase 1 | Complete |
+| WORK-04 | Phase 1 | Complete |
 | PACE-01 | Phase 2 | Pending |
 | PACE-02 | Phase 2 | Pending |
 | PACE-03 | Phase 2 | Pending |
@@ -69,4 +69,4 @@
 
 ---
 *Requirements defined: 2026-04-12*
-*Last updated: 2026-04-12 after initial definition*
+*Last updated: 2026-04-12 after Phase 1 completion*

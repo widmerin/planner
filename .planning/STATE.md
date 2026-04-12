@@ -12,15 +12,15 @@ See: .planning/PROJECT.md (updated 2026-04-12)
 
 | Field | Value |
 |-------|-------|
-| Current Phase | Not started |
+| Current Phase | Phase 2 (Pace Tracking) |
 | Mode | YOLO |
-| Last Transition | None |
+| Last Transition | Phase 1 → Phase 2 |
 
 ## Phase Status
 
 | Phase | Name | Status | Started | Completed |
 |-------|------|--------|---------|-----------|
-| 1 | Workout CRUD | Pending | — | — |
+| 1 | Workout CRUD | Complete | 2026-04-12 | 2026-04-12 |
 | 2 | Pace Tracking | Pending | — | — |
 | 3 | Offline Sync | Pending | — | — |
 
@@ -34,6 +34,13 @@ None.
 
 ## Recent Changes
 
+- **2026-04-12**: Phase 1 completed - Workout CRUD
+  - Added POST /api/workouts endpoint for creating workouts
+  - Added DELETE /api/workouts/[id] endpoint for deleting workouts
+  - Added "Add Workout" button in header
+  - Added delete button with confirmation modal
+  - Updated EditWorkoutModal to support create mode
+  - WORK-01, WORK-02, WORK-03, WORK-04: All complete
 - **2026-04-12**: Project initialized with planning documents
   - Created PROJECT.md with project context
   - Created REQUIREMENTS.md with v1 (10 requirements) and v2 (3 requirements)
@@ -44,5 +51,5 @@ None.
 
 - Project is brownfield — existing Nuxt frontend with Supabase integration
 - Codebase analysis completed in `.planning/codebase/`
-- MVP features partially shipped (week view, ICS sync, done tracking, pace modal)
-- Remaining MVP work: workout CRUD, pace UI, offline queue
+- Phase 1 complete: Workout CRUD fully implemented
+- Next: Phase 2 - Improve pace tracking UI visibility

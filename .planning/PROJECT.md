@@ -22,11 +22,11 @@ A single runner can see their weekly training plan, mark workouts done, and trac
 - ✓ Edit existing workout — shipped
 - ✓ Export workouts as JSON — shipped
 - ✓ Login screen with session management — shipped
+- ✓ Create new workout manually — Phase 1
+- ✓ Delete unwanted workouts — Phase 1
 
 ### Active
 
-- [ ] Create new workout manually
-- [ ] Delete unwanted workouts
 - [ ] Improve pace tracking UI visibility
 - [ ] Offline queue for failed syncs
 
@@ -92,4 +92,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-12 after project initialization*
+*Last updated: 2026-04-12 after Phase 1 completion*
