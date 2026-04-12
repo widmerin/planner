@@ -241,12 +241,10 @@ const onCancel = () => {
 }
 
 const onSave = async () => {
-  console.log('EditWorkoutModal onSave called', { draft: draft.value, errors: validationErrors.value })
   saveError.value = ''
   isSaving.value = true
 
   try {
-    console.log('Emitting save event with', draft.value)
     emit('save', { ...draft.value })
   } catch (error) {
     console.error('onSave error:', error)
