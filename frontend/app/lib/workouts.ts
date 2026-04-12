@@ -172,14 +172,6 @@ export const validateWorkout = (workout: Partial<Workout>): string[] => {
     errors.push('End time must be after start time')
   }
 
-  if (workout.start && workout.start < new Date()) {
-    const dateStr = workout.start.toISOString().split('T')[0]
-    const todayStr = new Date().toISOString().split('T')[0]
-    if (dateStr < todayStr) {
-      errors.push('Cannot create workouts in the past')
-    }
-  }
-
   return errors
 }
 
