@@ -88,9 +88,19 @@
       <section v-if="isLoading" class="panel">Loading workouts…</section>
       <section v-else-if="loadError" class="panel panel-error">{{ loadError }}</section>
 
-      <div v-if="rescheduleNotice" class="notice" role="status">
-        <span>{{ rescheduleNotice }}</span>
-        <button type="button" class="notice-dismiss" aria-label="Dismiss" @click="clearRescheduleNotice">✕</button>
+      <div v-if="rescheduleNotice" class="notice" role="status" :class="`notice-${rescheduleNotice.kind}`">
+        <span>{{ rescheduleNotice.message }}</span>
+        <div class="notice-actions">
+          <button
+            v-if="rescheduleNotice.action && rescheduleNotice.actionLabel"
+            type="button"
+            class="notice-btn"
+            @click="rescheduleNotice.action"
+          >
+            {{ rescheduleNotice.actionLabel }}
+          </button>
+          <button type="button" class="notice-dismiss" @click="clearRescheduleNotice">Dismiss</button>
+        </div>
       </div>
 
       <WeekBoard
@@ -227,10 +237,28 @@ const touchStartY = ref<number | null>(null)
 const showEditModal = ref(false)
 const editingWorkout = ref<Partial<Workout> | null>(null)
 
-const rescheduleNotice = ref<string>('')
+type RescheduleNotice = {
+  kind: 'error' | 'info'
+  message: string
+  actionLabel?: string
+  action?: () => Promise<void>
+}
+
+type RescheduleRetryPayload = {
+  workoutId: string
+  patchBody: {
+    start_date: string
+    end_date: string | null
+    is_all_day: boolean
+  }
+}
+
+const rescheduleNotice = ref<RescheduleNotice | null>(null)
+const lastRescheduleFailure = ref<RescheduleRetryPayload | null>(null)
 
 const clearRescheduleNotice = () => {
-  rescheduleNotice.value = ''
+  rescheduleNotice.value = null
+  lastRescheduleFailure.value = null
 }
 
 const weekStart = computed(() => startOfIsoWeek(anchorDate.value))
@@ -686,15 +714,12 @@ const handleLogout = () => {
   anchorDate.value = new Date()
 }
 
-const rescheduleNotice = ref<string>('')
-
-const clearRescheduleNotice = () => {
-  rescheduleNotice.value = ''
-}
-
 const onWorkoutMove = async (payload: { workoutId: string; sourceDayKey: string; targetDayKey: string }) => {
   if (isDayKeyBeforeToday(payload.targetDayKey)) {
-    rescheduleNotice.value = 'Can’t move workouts into the past.'
+    rescheduleNotice.value = {
+      kind: 'info',
+      message: 'Can’t move workouts into the past.',
+    }
     return
   }
 
@@ -714,15 +739,17 @@ const onWorkoutMove = async (payload: { workoutId: string; sourceDayKey: string;
 
   workouts.value = workouts.value.map((entry) => (entry.id === optimistic.id ? optimistic : entry))
 
+  const patchBody = {
+    start_date: optimistic.start.toISOString(),
+    end_date: optimistic.end ? optimistic.end.toISOString() : null,
+    is_all_day: optimistic.isAllDay,
+  }
+
   try {
     const response = await fetch(`/api/workouts/${optimistic.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        start_date: optimistic.start.toISOString(),
-        end_date: optimistic.end ? optimistic.end.toISOString() : null,
-        is_all_day: optimistic.isAllDay,
-      }),
+      body: JSON.stringify(patchBody),
     })
 
     if (!response.ok) {
@@ -734,10 +761,55 @@ const onWorkoutMove = async (payload: { workoutId: string; sourceDayKey: string;
     const normalized = normalizeWorkout(data.workout)
 
     workouts.value = workouts.value.map((entry) => (entry.id === normalized.id ? normalized : entry))
+    rescheduleNotice.value = null
+    lastRescheduleFailure.value = null
   } catch (error) {
     workouts.value = workouts.value.map((entry) => (entry.id === original.id ? original : entry))
     console.error('Error rescheduling workout:', error)
-    rescheduleNotice.value = 'Reschedule failed. Please try again.'
+
+    lastRescheduleFailure.value = {
+      workoutId: optimistic.id,
+      patchBody,
+    }
+
+    rescheduleNotice.value = {
+      kind: 'error',
+      message: 'Could not reschedule workout. Not saved.',
+      actionLabel: 'Retry',
+      action: async () => {
+        if (!lastRescheduleFailure.value) {
+          return
+        }
+
+        try {
+          const retry = lastRescheduleFailure.value
+          const retryResponse = await fetch(`/api/workouts/${retry.workoutId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(retry.patchBody),
+          })
+
+          if (!retryResponse.ok) {
+            const errorData = await retryResponse.json().catch(() => ({}))
+            throw new Error(errorData.statusMessage || `Update failed: ${retryResponse.status}`)
+          }
+
+          const data = await retryResponse.json()
+          const normalized = normalizeWorkout(data.workout)
+          workouts.value = workouts.value.map((entry) => (entry.id === normalized.id ? normalized : entry))
+
+          rescheduleNotice.value = null
+          lastRescheduleFailure.value = null
+        } catch (retryError) {
+          console.error('Retry rescheduling workout failed:', retryError)
+          rescheduleNotice.value = {
+            ...rescheduleNotice.value,
+            kind: 'error',
+            message: 'Retry failed. Please try again later.',
+          }
+        }
+      },
+    }
   }
 }
 

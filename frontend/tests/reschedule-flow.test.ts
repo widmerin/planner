@@ -1,6 +1,14 @@
 import { describe, expect, it, vi } from 'vitest'
 import { isDayKeyBeforeToday, moveWorkoutToDayKey, normalizeWorkout, type Workout } from '../app/lib/workouts'
 
+type RescheduleFailureState = {
+  retry: {
+    workoutId: string
+    patchBody: { start_date: string; end_date: string | null; is_all_day: boolean }
+  } | null
+  message: string | null
+}
+
 const makeWorkout = (partial: Partial<Workout> = {}): Workout => {
   return {
     id: partial.id ?? 'w1',
@@ -88,38 +96,83 @@ describe('reschedule flow (optimistic + PATCH)', () => {
     expect(updated.end?.toISOString()).toBe('2026-04-22T07:00:00.000Z')
   })
 
-  it('reverts optimistic update when PATCH fails', async () => {
+  it('reverts optimistic update when PATCH fails and exposes a retry payload (no alert)', async () => {
     const initial = makeWorkout({ id: 'w1', start: new Date('2026-04-20T06:00:00.000Z') })
     const optimistic = {
       ...initial,
       ...moveWorkoutToDayKey(initial, '2026-04-22'),
     }
 
-    const fetchMock = vi.fn(async () => ({ ok: false, status: 500, json: async () => ({}) }) as any)
+    // Node test env does not define alert() by default; define it so we can assert it wasn't called.
+    vi.stubGlobal('alert', vi.fn())
+    const alertSpy = vi.mocked(globalThis.alert as any)
 
-    const persist = async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 500, json: async () => ({}) } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          workout: {
+            id: 'w1',
+            uid: 'uid1',
+            summary: 'Easy run',
+            description: '',
+            start: '2026-04-22T06:00:00.000Z',
+            end: '2026-04-22T07:00:00.000Z',
+            isAllDay: false,
+          },
+        }),
+      } as any)
+
+    const patchBody = {
+      start_date: optimistic.start.toISOString(),
+      end_date: optimistic.end ? optimistic.end.toISOString() : null,
+      is_all_day: optimistic.isAllDay,
+    }
+
+    const persistAttempt = async (): Promise<{ nextWorkout: Workout; failure: RescheduleFailureState }> => {
+      const failure: RescheduleFailureState = { retry: null, message: null }
+
       const response = await fetchMock(`/api/workouts/${optimistic.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          start_date: optimistic.start.toISOString(),
-          end_date: optimistic.end ? optimistic.end.toISOString() : null,
-          is_all_day: optimistic.isAllDay,
-        }),
+        body: JSON.stringify(patchBody),
       })
+
       if (!response.ok) {
-        throw new Error(`Update failed: ${response.status}`)
+        failure.retry = { workoutId: optimistic.id, patchBody }
+        failure.message = 'Could not reschedule workout. Not saved.'
+        return { nextWorkout: initial, failure }
       }
+
+      return { nextWorkout: optimistic, failure }
     }
 
-    let state: Workout = optimistic
-    try {
-      await persist()
-    } catch {
-      state = initial
-    }
+    let workoutState: Workout = optimistic
+    const { nextWorkout, failure } = await persistAttempt()
+    workoutState = nextWorkout
 
-    expect(state.start.toISOString()).toBe(initial.start.toISOString())
-    expect(fetchMock).toHaveBeenCalledOnce()
+    expect(workoutState.start.toISOString()).toBe(initial.start.toISOString())
+    expect(failure.retry?.workoutId).toBe('w1')
+    expect(failure.retry?.patchBody.start_date).toBe(patchBody.start_date)
+    expect(alertSpy).not.toHaveBeenCalled()
+    vi.unstubAllGlobals()
+
+    // simulate Retry
+    const retryResponse = await fetchMock(`/api/workouts/${failure.retry!.workoutId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(failure.retry!.patchBody),
+    })
+
+    expect(retryResponse.ok).toBe(true)
+    const data = await retryResponse.json()
+    const normalized = normalizeWorkout(data.workout)
+    workoutState = normalized
+
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(workoutState.start.toISOString()).toBe('2026-04-22T06:00:00.000Z')
+
   })
 })
