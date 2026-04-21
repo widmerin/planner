@@ -227,6 +227,11 @@ export const dateKeyToDate = (dayKey: string): Date => {
   return new Date(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10))
 }
 
+export const isDayKeyBeforeToday = (dayKey: string, now: Date = new Date()): boolean => {
+  const todayKey = toDayKey(now)
+  return dayKey < todayKey
+}
+
 export const moveWorkoutToDayKey = (
   workout: Workout,
   targetDayKey: string,

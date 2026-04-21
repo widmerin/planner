@@ -88,6 +88,11 @@
       <section v-if="isLoading" class="panel">Loading workouts…</section>
       <section v-else-if="loadError" class="panel panel-error">{{ loadError }}</section>
 
+      <div v-if="rescheduleNotice" class="notice" role="status">
+        <span>{{ rescheduleNotice }}</span>
+        <button type="button" class="notice-dismiss" aria-label="Dismiss" @click="clearRescheduleNotice">✕</button>
+      </div>
+
       <WeekBoard
         v-if="isDesktop"
         :anchor-date="anchorDate"
@@ -197,6 +202,7 @@ import WeekBoard from '~/components/WeekBoard.vue'
 import {
   formatTimeRange,
   getIsoWeekDays,
+  isDayKeyBeforeToday,
   moveWorkoutToDayKey,
   normalizeWorkout,
   startOfIsoWeek,
@@ -220,6 +226,12 @@ const touchStartX = ref<number | null>(null)
 const touchStartY = ref<number | null>(null)
 const showEditModal = ref(false)
 const editingWorkout = ref<Partial<Workout> | null>(null)
+
+const rescheduleNotice = ref<string>('')
+
+const clearRescheduleNotice = () => {
+  rescheduleNotice.value = ''
+}
 
 const weekStart = computed(() => startOfIsoWeek(anchorDate.value))
 const weekDays = computed(() => getIsoWeekDays(weekStart.value))
@@ -674,7 +686,18 @@ const handleLogout = () => {
   anchorDate.value = new Date()
 }
 
+const rescheduleNotice = ref<string>('')
+
+const clearRescheduleNotice = () => {
+  rescheduleNotice.value = ''
+}
+
 const onWorkoutMove = async (payload: { workoutId: string; sourceDayKey: string; targetDayKey: string }) => {
+  if (isDayKeyBeforeToday(payload.targetDayKey)) {
+    rescheduleNotice.value = 'Can’t move workouts into the past.'
+    return
+  }
+
   const workoutIndex = workouts.value.findIndex((entry) => entry.id === payload.workoutId)
   if (workoutIndex < 0) {
     return
@@ -714,7 +737,7 @@ const onWorkoutMove = async (payload: { workoutId: string; sourceDayKey: string;
   } catch (error) {
     workouts.value = workouts.value.map((entry) => (entry.id === original.id ? original : entry))
     console.error('Error rescheduling workout:', error)
-    alert('Failed to reschedule workout')
+    rescheduleNotice.value = 'Reschedule failed. Please try again.'
   }
 }
 

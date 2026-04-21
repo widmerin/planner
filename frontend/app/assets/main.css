@@ -553,6 +553,35 @@ h1 {
   background: rgba(61, 18, 29, 0.8);
 }
 
+.notice {
+  margin: 0.6rem 0;
+  padding: 0.6rem 0.7rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 184, 77, 0.22);
+  background: rgba(255, 184, 77, 0.12);
+  color: #fff1cf;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  align-items: center;
+  font-weight: 700;
+}
+
+.notice-dismiss {
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  padding: 0.2rem 0.35rem;
+  border-radius: 10px;
+}
+
+.notice-dismiss:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
 .week-grid {
   display: grid;
   gap: 0.65rem;

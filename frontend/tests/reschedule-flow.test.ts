@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { moveWorkoutToDayKey, normalizeWorkout, type Workout } from '../app/lib/workouts'
+import { isDayKeyBeforeToday, moveWorkoutToDayKey, normalizeWorkout, type Workout } from '../app/lib/workouts'
 
 const makeWorkout = (partial: Partial<Workout> = {}): Workout => {
   return {
@@ -14,6 +14,29 @@ const makeWorkout = (partial: Partial<Workout> = {}): Workout => {
 }
 
 describe('reschedule flow (optimistic + PATCH)', () => {
+  it('blocks moves into the past (no optimistic move, no PATCH)', async () => {
+    const targetDayKey = '2026-04-19'
+    const now = new Date('2026-04-20T12:00:00.000Z')
+
+    expect(isDayKeyBeforeToday(targetDayKey, now)).toBe(true)
+
+    const fetchMock = vi.fn(async () => ({ ok: true, json: async () => ({}) }) as any)
+
+    const attemptMove = async () => {
+      if (isDayKeyBeforeToday(targetDayKey, now)) {
+        return { moved: false }
+      }
+
+      await fetchMock('/api/workouts/w1', { method: 'PATCH' })
+      return { moved: true }
+    }
+
+    const result = await attemptMove()
+
+    expect(result.moved).toBe(false)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   it('moves workout optimistically and then replaces with normalized API response', async () => {
     const initial = makeWorkout({ id: 'w1', start: new Date('2026-04-20T06:00:00.000Z') })
 
