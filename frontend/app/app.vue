@@ -88,6 +88,13 @@
       <section v-if="isLoading" class="panel">Loading workouts…</section>
       <section v-else-if="loadError" class="panel panel-error">{{ loadError }}</section>
 
+      <WeekBoard
+        v-if="isDesktop"
+        :anchor-date="anchorDate"
+        :workouts="workouts"
+        @move="onWorkoutMove"
+      />
+
       <section v-else class="week-grid">
         <article v-for="day in weekDays" :key="toDayKey(day)" class="day-card" :class="{ today: isToday(day) }">
           <div class="day-label">{{ formatDayLabel(day) }} • {{ formatShortDate(day) }}</div>
@@ -183,12 +190,14 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { useStorage } from '@vueuse/core'
+import { useMediaQuery, useStorage } from '@vueuse/core'
 import LoginScreen from '~/components/LoginScreen.vue'
 import EditWorkoutModal from '~/components/EditWorkoutModal.vue'
+import WeekBoard from '~/components/WeekBoard.vue'
 import {
   formatTimeRange,
   getIsoWeekDays,
+  moveWorkoutToDayKey,
   normalizeWorkout,
   startOfIsoWeek,
   toDayKey,
@@ -202,6 +211,7 @@ const anchorDate = ref(new Date())
 const workouts = ref<Workout[]>([])
 const isLoading = ref(true)
 const loadError = ref('')
+const isDesktop = useMediaQuery('(min-width: 1024px)')
 const doneState = useStorage<Record<string, boolean>>('weekplanner-done-v1', {})
 const paceState = useStorage<Record<string, string>>('weekplanner-pace-v1', {})
 const activePaceWorkoutId = ref<string | null>(null)
@@ -662,6 +672,50 @@ const handleLogout = () => {
   void logout()
   isLoggedIn.value = false
   anchorDate.value = new Date()
+}
+
+const onWorkoutMove = async (payload: { workoutId: string; sourceDayKey: string; targetDayKey: string }) => {
+  const workoutIndex = workouts.value.findIndex((entry) => entry.id === payload.workoutId)
+  if (workoutIndex < 0) {
+    return
+  }
+
+  const workout = workouts.value[workoutIndex]
+  const original = workout
+
+  const movedFields = moveWorkoutToDayKey(workout, payload.targetDayKey)
+  const optimistic: Workout = {
+    ...workout,
+    ...movedFields,
+  }
+
+  workouts.value = workouts.value.map((entry) => (entry.id === optimistic.id ? optimistic : entry))
+
+  try {
+    const response = await fetch(`/api/workouts/${optimistic.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        start_date: optimistic.start.toISOString(),
+        end_date: optimistic.end ? optimistic.end.toISOString() : null,
+        is_all_day: optimistic.isAllDay,
+      }),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.statusMessage || `Update failed: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const normalized = normalizeWorkout(data.workout)
+
+    workouts.value = workouts.value.map((entry) => (entry.id === normalized.id ? normalized : entry))
+  } catch (error) {
+    workouts.value = workouts.value.map((entry) => (entry.id === original.id ? original : entry))
+    console.error('Error rescheduling workout:', error)
+    alert('Failed to reschedule workout')
+  }
 }
 
 const loadWorkouts = async () => {

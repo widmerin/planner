@@ -48,6 +48,31 @@ export const getIsoWeekDays = (weekStart: Date): Date[] => {
   })
 }
 
+export const addDays = (date: Date, days: number): Date => {
+  const copy = new Date(date)
+  copy.setDate(copy.getDate() + days)
+  return copy
+}
+
+export type IsoWeekModel = {
+  weekStart: Date
+  days: Date[]
+}
+
+export const getIsoWeeks = (startWeek: Date, count: number): IsoWeekModel[] => {
+  return Array.from({ length: count }, (_, index) => {
+    const weekStart = addDays(startWeek, index * 7)
+    return {
+      weekStart,
+      days: getIsoWeekDays(weekStart),
+    }
+  })
+}
+
+export const getIsoWeekStarts = (startWeek: Date, count: number): Date[] => {
+  return getIsoWeeks(startWeek, count).map((week) => week.weekStart)
+}
+
 const normalizeDateOnly = (date: Date): Date => {
   const copy = new Date(date)
   copy.setHours(0, 0, 0, 0)
@@ -96,6 +121,46 @@ export const workoutsByDayForWeek = (
 
     const key = toDayKey(workout.start)
     if (keys.has(key)) {
+      grouped[key].push(workout)
+    }
+  }
+
+  return grouped
+}
+
+export const workoutsByDayForRange = (
+  workouts: Workout[],
+  rangeStartInclusive: Date,
+  rangeEndExclusive: Date,
+): Record<string, Workout[]> => {
+  const start = normalizeDateOnly(rangeStartInclusive)
+  const end = normalizeDateOnly(rangeEndExclusive)
+
+  const keys: string[] = []
+  for (const cursor = new Date(start); cursor < end; cursor.setDate(cursor.getDate() + 1)) {
+    keys.push(toDayKey(cursor))
+  }
+
+  const keySet = new Set(keys)
+  const grouped: Record<string, Workout[]> = {}
+  for (const key of keys) {
+    grouped[key] = []
+  }
+
+  for (const workout of workouts) {
+    if (workout.isAllDay) {
+      const allDays = expandAllDayRange(workout.start, workout.end)
+      for (const day of allDays) {
+        const key = toDayKey(day)
+        if (keySet.has(key)) {
+          grouped[key].push(workout)
+        }
+      }
+      continue
+    }
+
+    const key = toDayKey(workout.start)
+    if (keySet.has(key)) {
       grouped[key].push(workout)
     }
   }
@@ -160,4 +225,38 @@ export const parseTime = (timeStr: string): number | null => {
 export const dateKeyToDate = (dayKey: string): Date => {
   const [year, month, day] = dayKey.split('-')
   return new Date(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10))
+}
+
+export const moveWorkoutToDayKey = (
+  workout: Workout,
+  targetDayKey: string,
+): Pick<Workout, 'start' | 'end' | 'isAllDay'> => {
+  const target = dateKeyToDate(targetDayKey)
+
+  if (workout.isAllDay) {
+    const start = normalizeDateOnly(target)
+
+    if (!workout.end) {
+      return { start, end: null, isAllDay: true }
+    }
+
+    const startDate = normalizeDateOnly(workout.start)
+    const endDate = normalizeDateOnly(workout.end)
+    const spanDays = Math.max(1, Math.round((endDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000)))
+
+    const end = addDays(start, spanDays)
+    return { start, end, isAllDay: true }
+  }
+
+  const start = new Date(target)
+  start.setHours(workout.start.getHours(), workout.start.getMinutes(), workout.start.getSeconds(), workout.start.getMilliseconds())
+
+  if (!workout.end) {
+    return { start, end: null, isAllDay: false }
+  }
+
+  const durationMs = Math.max(0, workout.end.getTime() - workout.start.getTime())
+  const end = new Date(start.getTime() + durationMs)
+
+  return { start, end, isAllDay: false }
 }
