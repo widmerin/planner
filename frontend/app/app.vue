@@ -869,6 +869,20 @@ useHead({
 onMounted(async () => {
   anchorDate.value = new Date()
 
+  // Test-only hook: allows Playwright to trigger a deterministic move attempt
+  // without relying on a particular day being visible in the 4-week window.
+  if (process.env.NODE_ENV === 'test') {
+    ;(window as any).__weekboardTestHookInstalled = true
+    window.addEventListener('weekboard:test-move', (event: Event) => {
+      const detail = (event as CustomEvent).detail as {
+        workoutId: string
+        sourceDayKey: string
+        targetDayKey: string
+      }
+      void onWorkoutMove(detail)
+    })
+  }
+
   if (await isAuthenticated()) {
     isLoggedIn.value = true
 

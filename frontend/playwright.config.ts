@@ -25,6 +25,7 @@ export default defineConfig({
     env: {
       APP_USER: 'testuser',
       APP_PASSWORD: 'testpass',
+      NODE_ENV: 'test',
     },
   },
   projects: [
