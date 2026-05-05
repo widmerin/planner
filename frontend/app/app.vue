@@ -113,6 +113,7 @@
         @done-change="onDesktopDoneChange"
         @edit="openEditModal"
         @delete="confirmDelete"
+        @create="openWorkoutTypeModal"
       />
 
       <section v-else class="week-grid">
@@ -630,6 +631,21 @@ const openNewWorkoutModal = () => {
     description: '',
     start: new Date(),
     end: null,
+    isAllDay: false,
+  }
+  showEditModal.value = true
+}
+
+const openWorkoutTypeModal = (payload: { dayKey: string; type: string }) => {
+  const start = new Date(`${payload.dayKey}T08:00:00`)
+  const end = new Date(start)
+  end.setMinutes(start.getMinutes() + (payload.type.includes('Langer Run') ? 90 : 60))
+
+  editingWorkout.value = {
+    summary: payload.type,
+    description: '',
+    start,
+    end,
     isAllDay: false,
   }
   showEditModal.value = true

@@ -113,6 +113,20 @@ test.describe('WeekBoard (desktop) drag/drop reschedule', () => {
     await expect(page.locator(dayZone(DAY_KEYS.source)).locator(workoutCard('w1'))).toBeHidden()
   })
 
+  test('empty desktop days can start a workout from a selected type', async ({ page }) => {
+    await login(page)
+
+    const emptyDay = page.locator(dayZone('2026-04-10'))
+    await expect(emptyDay).toBeVisible()
+
+    await emptyDay.getByLabel(/Workout type for/).selectOption('🔥 Tempolauf')
+    await emptyDay.getByRole('button', { name: /Add workout/ }).click()
+
+    await expect(page.locator('.edit-modal')).toBeVisible()
+    await expect(page.locator('#edit-summary')).toHaveValue('🔥 Tempolauf')
+    await expect(page.locator('#edit-date')).toHaveValue('2026-04-10')
+  })
+
   test('successful drag/drop calls PATCH and moves card into target day', async ({ page }) => {
     const patchCalls: Array<{ url: string; body: any }> = []
     await page.route(/\/api\/workouts\/[^/]+$/, async (route) => {

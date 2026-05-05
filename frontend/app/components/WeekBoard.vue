@@ -61,7 +61,21 @@
             </li>
           </ul>
 
-          <p v-else class="week-board-empty">—</p>
+          <div v-else class="week-board-empty-add">
+            <select
+              v-model="selectedWorkoutTypes[toDayKey(day)]"
+              :aria-label="`Workout type for ${formatDayLabel(day)} ${formatShortDate(day)}`"
+            >
+              <option v-for="type in workoutTypes" :key="type" :value="type">{{ type }}</option>
+            </select>
+            <button
+              type="button"
+              :aria-label="`Add workout on ${formatDayLabel(day)} ${formatShortDate(day)}`"
+              @click="emit('create', { dayKey: toDayKey(day), type: selectedWorkoutTypes[toDayKey(day)] ?? workoutTypes[0] })"
+            >
+              +
+            </button>
+          </div>
         </section>
       </div>
     </article>
@@ -96,9 +110,12 @@ const emit = defineEmits<{
   (e: 'done-change', payload: { workoutId: string; done: boolean }): void
   (e: 'edit', workout: Workout): void
   (e: 'delete', workout: Workout): void
+  (e: 'create', payload: { dayKey: string; type: string }): void
 }>()
 
 const activeDropDayKey = ref<string | null>(null)
+const workoutTypes = ['🧘 Yoga', '🏃 Leichter Run', '🏃 Langer Run', '⚡ Interval', '🔥 Tempolauf']
+const selectedWorkoutTypes = ref<Record<string, string>>({})
 
 const todayKey = computed(() => toDayKey(new Date()))
 
