@@ -217,6 +217,7 @@ import EditWorkoutModal from '~/components/EditWorkoutModal.vue'
 import WeekBoard from '~/components/WeekBoard.vue'
 import {
   formatTimeRange,
+  createWorkoutDraftForDay,
   getIsoWeekDays,
   isDayKeyBeforeToday,
   moveWorkoutToDayKey,
@@ -637,17 +638,7 @@ const openNewWorkoutModal = () => {
 }
 
 const openWorkoutTypeModal = (payload: { dayKey: string; type: string }) => {
-  const start = new Date(`${payload.dayKey}T08:00:00`)
-  const end = new Date(start)
-  end.setMinutes(start.getMinutes() + (payload.type.includes('Langer Run') ? 90 : 60))
-
-  editingWorkout.value = {
-    summary: payload.type,
-    description: '',
-    start,
-    end,
-    isAllDay: false,
-  }
+  editingWorkout.value = createWorkoutDraftForDay(payload.dayKey, payload.type)
   showEditModal.value = true
 }
 

@@ -12,6 +12,38 @@ export type Workout = {
   updated_at?: Date
 }
 
+export const WORKOUT_TYPE_OPTIONS = ['🧘 Yoga', '🏃 Leichter Run', '🏃 Langer Run', '⚡ Interval', '🔥 Tempolauf'] as const
+
+export type WorkoutTypeOption = (typeof WORKOUT_TYPE_OPTIONS)[number]
+
+export const workoutTypeForDay = (selectedType?: string): WorkoutTypeOption => {
+  if (WORKOUT_TYPE_OPTIONS.includes(selectedType as WorkoutTypeOption)) {
+    return selectedType as WorkoutTypeOption
+  }
+
+  return WORKOUT_TYPE_OPTIONS[0]
+}
+
+export const createWorkoutDraftForDay = (
+  dayKey: string,
+  selectedType?: string,
+): Pick<Workout, 'summary' | 'description' | 'start' | 'end' | 'isAllDay'> => {
+  const summary = workoutTypeForDay(selectedType)
+  const start = dateKeyToDate(dayKey)
+  start.setHours(8, 0, 0, 0)
+
+  const end = new Date(start)
+  end.setMinutes(start.getMinutes() + (summary.includes('Langer Run') ? 90 : 60))
+
+  return {
+    summary,
+    description: '',
+    start,
+    end,
+    isAllDay: false,
+  }
+}
+
 export const normalizeWorkout = (workout: any): Workout => {
   return {
     id: workout.id,

@@ -11,23 +11,6 @@ function workoutCard(id: string) {
   return `[data-workout-id="${id}"]`
 }
 
-async function waitForWorkoutInDay(page: import('@playwright/test').Page, dayKey: string, workoutId: string) {
-  await expect
-    .poll(
-      () =>
-        page.evaluate(
-          ({ dayKey, workoutId }) => {
-            const day = document.querySelector(`[data-day-key="${dayKey}"]`)
-            if (!day) return false
-            return Boolean(day.querySelector(`[data-workout-id="${workoutId}"]`))
-          },
-          { dayKey, workoutId },
-        ),
-      { timeout: 15000 },
-    )
-    .toBe(true)
-}
-
 async function login(page: import('@playwright/test').Page) {
   await page.goto('/')
   await expect(page.getByRole('heading', { name: 'Week Planner' })).toBeVisible()

@@ -90,6 +90,7 @@ import {
   serializeDragWorkoutPayload,
 } from '~/lib/dragdrop'
 import {
+  WORKOUT_TYPE_OPTIONS,
   formatTimeRange,
   getIsoWeeks,
   startOfIsoWeek,
@@ -114,7 +115,7 @@ const emit = defineEmits<{
 }>()
 
 const activeDropDayKey = ref<string | null>(null)
-const workoutTypes = ['🧘 Yoga', '🏃 Leichter Run', '🏃 Langer Run', '⚡ Interval', '🔥 Tempolauf']
+const workoutTypes = WORKOUT_TYPE_OPTIONS
 const selectedWorkoutTypes = ref<Record<string, string>>({})
 
 const todayKey = computed(() => toDayKey(new Date()))

@@ -13,6 +13,7 @@ frontend/.env.local
 .gsd
 .gsd-id
 .mcp.json
+.codex
 .bg-shell/
 Thumbs.db
 *.swp

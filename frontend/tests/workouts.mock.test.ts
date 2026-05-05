@@ -8,6 +8,9 @@ import {
   formatTimeRange,
   normalizeWorkout,
   validateWorkout,
+  WORKOUT_TYPE_OPTIONS,
+  createWorkoutDraftForDay,
+  workoutTypeForDay,
 } from '../app/lib/workouts'
 
 describe('Date utilities', () => {
@@ -129,6 +132,42 @@ describe('validateWorkout', () => {
       isAllDay: false,
     })
     expect(errors).toHaveLength(0)
+  })
+})
+
+describe('workout type drafts', () => {
+  it('exposes the expected quick-add workout types', () => {
+    expect(WORKOUT_TYPE_OPTIONS).toEqual([
+      '🧘 Yoga',
+      '🏃 Leichter Run',
+      '🏃 Langer Run',
+      '⚡ Interval',
+      '🔥 Tempolauf',
+    ])
+  })
+
+  it('falls back to Yoga for unknown quick-add selections', () => {
+    expect(workoutTypeForDay('')).toBe('🧘 Yoga')
+    expect(workoutTypeForDay('Swim')).toBe('🧘 Yoga')
+  })
+
+  it('creates a one-hour workout draft on the selected day', () => {
+    const draft = createWorkoutDraftForDay('2026-04-10', '🔥 Tempolauf')
+
+    expect(draft.summary).toBe('🔥 Tempolauf')
+    expect(toDayKey(draft.start)).toBe('2026-04-10')
+    expect(draft.start.getHours()).toBe(8)
+    expect(draft.start.getMinutes()).toBe(0)
+    expect(draft.end?.getHours()).toBe(9)
+    expect(draft.isAllDay).toBe(false)
+  })
+
+  it('creates a longer draft for long runs', () => {
+    const draft = createWorkoutDraftForDay('2026-04-10', '🏃 Langer Run')
+
+    expect(draft.summary).toBe('🏃 Langer Run')
+    expect(draft.end?.getHours()).toBe(9)
+    expect(draft.end?.getMinutes()).toBe(30)
   })
 })
 
