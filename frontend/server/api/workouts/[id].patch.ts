@@ -6,6 +6,9 @@ interface UpdateWorkoutRequest {
   start_date?: string
   end_date?: string | null
   is_all_day?: boolean
+  start?: string
+  end?: string | null
+  isAllDay?: boolean
 }
 
 export default defineEventHandler(async (event) => {
@@ -30,7 +33,10 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody<UpdateWorkoutRequest>(event)
-  const { summary, description, start_date, end_date, is_all_day } = body
+  const { summary, description } = body
+  const start_date = body.start_date ?? body.start
+  const end_date = body.end_date ?? body.end
+  const is_all_day = body.is_all_day ?? body.isAllDay
 
   if (!summary?.trim() && !description && !start_date && end_date === undefined && is_all_day === undefined) {
     throw createError({
@@ -51,6 +57,30 @@ export default defineEventHandler(async (event) => {
       statusCode: 400,
       statusMessage: 'Description must be 1000 characters or less',
     })
+  }
+
+  if (start_date && Number.isNaN(new Date(start_date).getTime())) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid start date format',
+    })
+  }
+
+  if (end_date) {
+    const endDate = new Date(end_date)
+    if (Number.isNaN(endDate.getTime())) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Invalid end date format',
+      })
+    }
+
+    if (start_date && endDate <= new Date(start_date)) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'End time must be after start time',
+      })
+    }
   }
 
   const updateData: Record<string, any> = {}

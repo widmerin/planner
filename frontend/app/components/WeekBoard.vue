@@ -32,13 +32,32 @@
               v-for="workout in workoutsByDayKey[toDayKey(day)]"
               :key="workout.id"
               class="week-board-workout"
+              :class="{ done: isDone(workout.id) }"
               draggable="true"
               :data-workout-id="workout.id"
               @dragstart="onWorkoutDragStart($event, workout.id, toDayKey(day))"
               @dragend="onWorkoutDragEnd"
             >
-              <strong class="week-board-workout-title">{{ workout.summary }}</strong>
-              <span class="week-board-workout-time">{{ formatTimeRange(workout) }}</span>
+              <label class="week-board-workout-check" @click.stop>
+                <input
+                  type="checkbox"
+                  :checked="isDone(workout.id)"
+                  :aria-label="`Mark ${workout.summary} done`"
+                  @change="onDoneChange(workout.id, $event)"
+                >
+              </label>
+
+              <div class="week-board-workout-content">
+                <strong class="week-board-workout-title">{{ workout.summary }}</strong>
+                <span class="week-board-workout-time">{{ formatTimeRange(workout) }}</span>
+                <span v-if="workout.description" class="week-board-workout-description">{{ workout.description }}</span>
+                <span v-if="paceState[workout.id]" class="week-board-workout-pace">{{ paceState[workout.id] }} min/km</span>
+              </div>
+
+              <div class="week-board-workout-actions" @click.stop>
+                <button type="button" :aria-label="`Edit ${workout.summary}`" @click="emit('edit', workout)">✎</button>
+                <button type="button" :aria-label="`Delete ${workout.summary}`" @click="emit('delete', workout)">✕</button>
+              </div>
             </li>
           </ul>
 
@@ -68,10 +87,15 @@ import {
 const props = defineProps<{
   anchorDate: Date
   workouts: Workout[]
+  doneState: Record<string, boolean>
+  paceState: Record<string, string>
 }>()
 
 const emit = defineEmits<{
   (e: 'move', payload: { workoutId: string; sourceDayKey: string; targetDayKey: string }): void
+  (e: 'done-change', payload: { workoutId: string; done: boolean }): void
+  (e: 'edit', workout: Workout): void
+  (e: 'delete', workout: Workout): void
 }>()
 
 const activeDropDayKey = ref<string | null>(null)
@@ -92,6 +116,13 @@ const rangeEndExclusive = computed(() => {
 const workoutsByDayKey = computed(() => {
   return workoutsByDayForRange(props.workouts, rangeStart.value, rangeEndExclusive.value)
 })
+
+const isDone = (workoutId: string) => Boolean(props.doneState[workoutId])
+
+const onDoneChange = (workoutId: string, event: Event) => {
+  const checkbox = event.target as HTMLInputElement | null
+  emit('done-change', { workoutId, done: Boolean(checkbox?.checked) })
+}
 
 const formatWeekLabel = (weekStart: Date) => {
   const end = new Date(weekStart)

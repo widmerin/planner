@@ -126,17 +126,96 @@ body {
     border-radius: 12px;
     padding: 0.42rem 0.5rem;
     display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 0.38rem;
+  }
+
+  .week-board-workout.done {
+    border-color: rgba(103, 240, 192, 0.22);
+    background: rgba(103, 240, 192, 0.08);
+  }
+
+  .week-board-workout-check {
+    display: grid;
+    place-items: center;
+    min-width: 1.1rem;
+    padding-top: 0.05rem;
+    cursor: pointer;
+  }
+
+  .week-board-workout-check input {
+    width: 0.92rem;
+    height: 0.92rem;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  .week-board-workout-content {
+    min-width: 0;
+    display: grid;
     gap: 0.1rem;
   }
 
   .week-board-workout-title {
     font-size: 0.74rem;
+    overflow-wrap: anywhere;
+  }
+
+  .week-board-workout.done .week-board-workout-title {
+    color: rgba(245, 247, 255, 0.68);
+    text-decoration: line-through;
+    text-decoration-thickness: 2px;
   }
 
   .week-board-workout-time {
     font-size: 0.66rem;
     color: var(--muted);
     font-weight: 700;
+  }
+
+  .week-board-workout-description {
+    color: #7585a8;
+    font-size: 0.64rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .week-board-workout-pace {
+    color: var(--accent);
+    font-size: 0.64rem;
+    font-weight: 800;
+  }
+
+  .week-board-workout-actions {
+    display: flex;
+    gap: 0.1rem;
+    opacity: 0;
+    transition: opacity 140ms ease;
+  }
+
+  .week-board-workout:hover .week-board-workout-actions,
+  .week-board-workout:focus-within .week-board-workout-actions {
+    opacity: 1;
+  }
+
+  .week-board-workout-actions button {
+    width: 1.35rem;
+    height: 1.35rem;
+    display: inline-grid;
+    place-items: center;
+    border: 0;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.76rem;
+    line-height: 1;
+  }
+
+  .week-board-workout-actions button:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--text);
   }
 
   .week-board-empty {

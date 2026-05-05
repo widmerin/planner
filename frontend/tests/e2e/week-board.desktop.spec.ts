@@ -75,6 +75,44 @@ test.describe('WeekBoard (desktop) drag/drop reschedule', () => {
     await expect(page.locator('section.week-board[aria-label="4 week board"]')).toBeVisible()
   })
 
+  test('workout cards support done, edit, and delete controls', async ({ page }) => {
+    let deleteSeen = false
+    await page.route(/\/api\/workouts\/[^/]+$/, async (route) => {
+      if (route.request().method() !== 'DELETE') return route.fallback()
+      deleteSeen = true
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true }) })
+    })
+
+    page.on('dialog', async (dialog) => {
+      expect(dialog.message()).toContain('Easy Run')
+      await dialog.accept()
+    })
+
+    await login(page)
+
+    const card = page.locator(dayZone(DAY_KEYS.source)).locator(workoutCard('w1'))
+    await expect(card).toBeVisible()
+
+    const checkbox = card.getByRole('checkbox', { name: /Mark .*Easy Run.* done/ })
+    await checkbox.check()
+    await expect(card).toHaveClass(/done/)
+    await expect(page.locator('.pace-modal')).toBeVisible()
+    await page.locator('.pace-modal button:has-text("Skip")').click()
+
+    await card.hover()
+    await card.getByRole('button', { name: /Edit .*Easy Run/ }).click()
+    await expect(page.locator('.edit-modal')).toBeVisible()
+    await page.getByRole('button', { name: 'Cancel' }).click()
+
+    await card.hover()
+    await card.getByRole('button', { name: /Delete .*Easy Run/ }).click()
+    await expect.poll(() => deleteSeen).toBe(true)
+    await expect(card).toBeHidden()
+
+    await page.reload()
+    await expect(page.locator(dayZone(DAY_KEYS.source)).locator(workoutCard('w1'))).toBeHidden()
+  })
+
   test('successful drag/drop calls PATCH and moves card into target day', async ({ page }) => {
     const patchCalls: Array<{ url: string; body: any }> = []
     await page.route(/\/api\/workouts\/[^/]+$/, async (route) => {

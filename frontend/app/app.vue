@@ -107,7 +107,12 @@
         v-if="isDesktop"
         :anchor-date="anchorDate"
         :workouts="workouts"
+        :done-state="doneState"
+        :pace-state="paceState"
         @move="onWorkoutMove"
+        @done-change="onDesktopDoneChange"
+        @edit="openEditModal"
+        @delete="confirmDelete"
       />
 
       <section v-else class="week-grid">
@@ -194,7 +199,7 @@
 
       <EditWorkoutModal
         :is-open="showEditModal"
-        :is-new="false"
+        :is-new="!editingWorkout?.id"
         :workout="editingWorkout"
         @save="saveEditWorkout"
         @cancel="onEditCancel"
@@ -230,6 +235,7 @@ const loadError = ref('')
 const isDesktop = useMediaQuery('(min-width: 1024px)')
 const doneState = useStorage<Record<string, boolean>>('weekplanner-done-v1', {})
 const paceState = useStorage<Record<string, string>>('weekplanner-pace-v1', {})
+const deletedState = useStorage<Record<string, boolean>>('weekplanner-deleted-v1', {})
 const activePaceWorkoutId = ref<string | null>(null)
 const paceDraft = ref('')
 const touchStartX = ref<number | null>(null)
@@ -491,6 +497,14 @@ const onDoneChange = (id: string, event: Event) => {
   }
 }
 
+const onDesktopDoneChange = (payload: { workoutId: string; done: boolean }) => {
+  setDone(payload.workoutId, payload.done)
+
+  if (payload.done && canTrackPaceById(payload.workoutId)) {
+    openPaceModal(payload.workoutId)
+  }
+}
+
 const openPaceModal = (id: string) => {
   activePaceWorkoutId.value = id
   paceDraft.value = getPace(id)
@@ -577,9 +591,9 @@ const saveEditWorkout = async (draft: Partial<Workout>) => {
         body: JSON.stringify({
           summary: draft.summary,
           description: draft.description,
-          start: draft.start instanceof Date ? draft.start.toISOString() : draft.start,
-          end: draft.end instanceof Date ? draft.end.toISOString() : draft.end,
-          isAllDay: draft.isAllDay,
+          start_date: draft.start instanceof Date ? draft.start.toISOString() : draft.start,
+          end_date: draft.end instanceof Date ? draft.end.toISOString() : draft.end,
+          is_all_day: draft.isAllDay,
         }),
       })
 
@@ -623,11 +637,20 @@ const openNewWorkoutModal = () => {
 
 const confirmDelete = (workout: Workout) => {
   if (confirm(`Delete "${workout.summary}"?`)) {
-    deleteWorkout(workout.id)
+    void deleteWorkout(workout.id)
   }
 }
 
 const deleteWorkout = async (id: string) => {
+  const previousDeletedState = deletedState.value
+  const previousWorkouts = workouts.value
+
+  deletedState.value = {
+    ...deletedState.value,
+    [id]: true,
+  }
+  workouts.value = workouts.value.filter((w) => w.id !== id)
+
   try {
     const response = await fetch(`/api/workouts/${id}`, {
       method: 'DELETE',
@@ -637,8 +660,13 @@ const deleteWorkout = async (id: string) => {
       throw new Error(`Delete failed: ${response.status}`)
     }
 
-    workouts.value = workouts.value.filter((w) => w.id !== id)
+    const data = await response.json().catch(() => ({}))
+    if (!data.persisted) {
+      console.warn('Workout hidden locally, but Supabase did not delete a row. Check DELETE RLS policy.')
+    }
   } catch (error) {
+    deletedState.value = previousDeletedState
+    workouts.value = previousWorkouts
     console.error('Error deleting workout:', error)
     alert('Failed to delete workout')
   }
@@ -827,7 +855,9 @@ const loadWorkouts = async () => {
     if (!data.workouts || data.workouts.length === 0) {
       console.warn('No workouts in database yet. Trying to sync from ICS...')
     }
-    workouts.value = data.workouts.map(normalizeWorkout)
+    workouts.value = data.workouts
+      .map(normalizeWorkout)
+      .filter((workout: Workout) => !deletedState.value[workout.id])
 
     // Load completions from Supabase
     const completionsResponse = await fetch('/api/workouts/completions')
@@ -935,4 +965,3 @@ onMounted(async () => {
   background: rgba(255, 107, 107, 0.1);
 }
 </style>
-

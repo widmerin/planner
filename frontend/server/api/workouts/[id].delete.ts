@@ -22,10 +22,11 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('workouts')
       .delete()
       .eq('id', workoutId)
+      .select('id')
 
     if (error) {
       console.error('Supabase delete error:', error)
@@ -35,6 +36,7 @@ export default defineEventHandler(async (event) => {
     return {
       success: true,
       deleted: workoutId,
+      persisted: Boolean(data?.length),
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)

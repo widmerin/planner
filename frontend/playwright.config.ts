@@ -38,6 +38,7 @@ export default defineConfig({
     },
     {
       name: 'mobile-chromium',
+      testIgnore: '**/week-board.desktop.spec.ts',
       use: devices['Pixel 7'],
     },
   ],
