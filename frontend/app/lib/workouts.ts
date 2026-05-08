@@ -12,7 +12,14 @@ export type Workout = {
   updated_at?: Date
 }
 
-export const WORKOUT_TYPE_OPTIONS = ['🧘 Yoga', '🏃 Leichter Run', '🏃 Langer Run', '⚡ Interval', '🔥 Tempolauf'] as const
+export const WORKOUT_TYPE_OPTIONS = [
+  '🧘 Yoga',
+  '🏃 Leichter Run',
+  '🏃 Langer Run',
+  '🏁 Langer Lauf - 10km race',
+  '⚡ Interval',
+  '🔥 Tempolauf',
+] as const
 
 export type WorkoutTypeOption = (typeof WORKOUT_TYPE_OPTIONS)[number]
 
@@ -33,7 +40,7 @@ export const createWorkoutDraftForDay = (
   start.setHours(8, 0, 0, 0)
 
   const end = new Date(start)
-  end.setMinutes(start.getMinutes() + (summary.includes('Langer Run') ? 90 : 60))
+  end.setMinutes(start.getMinutes() + (summary.includes('Langer Run') || summary.includes('Langer Lauf') ? 90 : 60))
 
   return {
     summary,

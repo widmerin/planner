@@ -141,6 +141,7 @@ describe('workout type drafts', () => {
       '🧘 Yoga',
       '🏃 Leichter Run',
       '🏃 Langer Run',
+      '🏁 Langer Lauf - 10km race',
       '⚡ Interval',
       '🔥 Tempolauf',
     ])
@@ -166,6 +167,14 @@ describe('workout type drafts', () => {
     const draft = createWorkoutDraftForDay('2026-04-10', '🏃 Langer Run')
 
     expect(draft.summary).toBe('🏃 Langer Run')
+    expect(draft.end?.getHours()).toBe(9)
+    expect(draft.end?.getMinutes()).toBe(30)
+  })
+
+  it('creates a longer draft for 10km race long runs', () => {
+    const draft = createWorkoutDraftForDay('2026-04-10', '🏁 Langer Lauf - 10km race')
+
+    expect(draft.summary).toBe('🏁 Langer Lauf - 10km race')
     expect(draft.end?.getHours()).toBe(9)
     expect(draft.end?.getMinutes()).toBe(30)
   })
