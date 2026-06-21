@@ -15,7 +15,11 @@
           v-for="day in week.days"
           :key="toDayKey(day)"
           class="week-board-day"
-          :class="{ today: toDayKey(day) === todayKey, 'is-drag-over': activeDropDayKey === toDayKey(day) }"
+          :class="{
+            today: toDayKey(day) === todayKey,
+            'is-drag-over': activeDropDayKey === toDayKey(day),
+            'is-red-date': RED_DATE_KEYS.has(toDayKey(day)),
+          }"
           :data-day-key="toDayKey(day)"
           @dragenter="onDayDragEnter($event, toDayKey(day))"
           @dragleave="onDayDragLeave($event, toDayKey(day))"
@@ -91,6 +95,7 @@ import {
 } from '~/lib/dragdrop'
 import {
   WORKOUT_TYPE_OPTIONS,
+  RED_DATE_KEYS,
   formatTimeRange,
   getIsoWeeks,
   startOfIsoWeek,

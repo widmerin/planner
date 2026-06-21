@@ -21,6 +21,17 @@ export const WORKOUT_TYPE_OPTIONS = [
   '🔥 Tempolauf',
 ] as const
 
+export const RED_DATE_KEYS = new Set([
+  '2026-06-12',
+  '2026-07-09',
+  '2026-08-05',
+  '2026-09-01',
+  '2026-09-28',
+  '2026-10-25',
+  '2026-11-21',
+  '2026-12-18',
+])
+
 export type WorkoutTypeOption = (typeof WORKOUT_TYPE_OPTIONS)[number]
 
 export const workoutTypeForDay = (selectedType?: string): WorkoutTypeOption => {

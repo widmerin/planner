@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  RED_DATE_KEYS,
   addDays,
   getIsoWeeks,
   startOfIsoWeek,
@@ -54,5 +55,18 @@ describe('Desktop 4-week board model', () => {
 
     expect(grouped['2026-01-05'].map((w) => w.id)).toEqual(['w1'])
     expect(grouped['2026-01-21'].map((w) => w.id)).toEqual(['w2'])
+  })
+
+  it('marks the requested 2026 dates as red date keys', () => {
+    expect([...RED_DATE_KEYS]).toEqual([
+      '2026-06-12',
+      '2026-07-09',
+      '2026-08-05',
+      '2026-09-01',
+      '2026-09-28',
+      '2026-10-25',
+      '2026-11-21',
+      '2026-12-18',
+    ])
   })
 })

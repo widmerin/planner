@@ -262,6 +262,10 @@ body {
   }
 }
 
+.week-board-day.is-red-date .week-board-day-date {
+  color: #ff5a5f;
+}
+
 .page-header {
   position: sticky;
   top: 0.3rem;
